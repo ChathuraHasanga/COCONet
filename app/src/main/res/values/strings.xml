@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">COCONet</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Map</string>
+    <string name="title_notifications">Account</string>
+    <string name="my_api_key">AIzaSyDJEym0HbE_vW0qjKXSFM3cshfWgnkHR6Q</string>
+</resources>
