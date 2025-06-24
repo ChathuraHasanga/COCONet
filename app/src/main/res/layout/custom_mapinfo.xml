@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+<!--    <TextView-->
+<!--        android:id="@+id/infoTitle"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textStyle="bold"-->
+<!--        android:textColor="#000000"-->
+<!--        android:textSize="18sp" />-->
+    
+    <TextView
+        android:id="@+id/infoSnippet"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="#333333"
+        android:textSize="14sp" />
+
+    <ImageView
+        android:id="@+id/contactBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_baseline_add_call_24"/>
+</LinearLayout>
