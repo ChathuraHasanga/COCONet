@@ -92,11 +92,11 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="View Map"
-                        android:textStyle="bold"
-                        android:textSize="20dp"
                         android:backgroundTint="#447EFF"
-                        android:textColor="#FFFFFF"/>
+                        android:text="View Map"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20dp"
+                        android:textStyle="bold" />
                 </LinearLayout>
 
             </LinearLayout>
