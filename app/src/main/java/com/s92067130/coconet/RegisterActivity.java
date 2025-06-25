@@ -55,6 +55,7 @@ public class RegisterActivity extends AppCompatActivity {
 
     EditText locationTxt;
     Button permissionBtn;
+    String district;
 
     private Double latitude = null;
     private Double longitude = null;
@@ -170,7 +171,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     FirebaseUser user = mAuth.getCurrentUser();
 
                                     //save user data to realtime database
-                                    saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude);
+                                    saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude, district);
 
                                     Toast.makeText(RegisterActivity.this, "Account Created.",
                                             Toast.LENGTH_SHORT).show();
@@ -240,10 +241,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     //Method to save user details to Firebase realtime database
-    private void saveUserDetailsToDatabase(String userId, String name,String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude){
+    private void saveUserDetailsToDatabase(String userId, String name,String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district){
 
         String loginToken = UUID.randomUUID().toString(); //generate a unique login token
-        User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude);
+        User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude, district);
 
         //save data usder the user's UID
         mDatabase.child("users").child(userId).setValue(user)
@@ -274,6 +275,7 @@ public class RegisterActivity extends AppCompatActivity {
                     List<Address> addresses = geocoder.getFromLocation(latitude,longitude,1);
                     if (addresses != null && !addresses.isEmpty()){
                         String address = addresses.get(0).getAddressLine(0);
+                        district = addresses.get(0).getSubAdminArea();
 
                         locationTxt.setText(address); //set address in editText
                     }else{
@@ -300,8 +302,9 @@ public class RegisterActivity extends AppCompatActivity {
         public String password;
         public Double latitude;
         public Double longitude;
+        public String district;
 
-        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude){
+        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district){
             this.name = name;
             this.contactNumber = contactNumber;
             this.email = email;
@@ -310,6 +313,7 @@ public class RegisterActivity extends AppCompatActivity {
             this.password = password;
             this.latitude = latitude;
             this.longitude = longitude;
+            this.district = district;
         }
     }
 }
