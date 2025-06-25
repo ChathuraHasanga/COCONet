@@ -137,7 +137,7 @@ public class StockInputActivity extends AppCompatActivity {
 
                     for (DataSnapshot entrySnap : stockSnap.getChildren()) {
                         Stock stock = entrySnap.getValue(Stock.class);
-                        if (stock != null && stock.timestamp > latestTimestamp) {
+                        if (stock != null && stock.storeName != null && stock.timestamp > latestTimestamp) {
                             latestTimestamp = stock.timestamp;
                             latestStock = stock;
                         }

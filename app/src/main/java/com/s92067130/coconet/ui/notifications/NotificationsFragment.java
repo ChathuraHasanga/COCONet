@@ -70,6 +70,8 @@ public class NotificationsFragment extends Fragment {
         userRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
                 .getReference("users").child(uid);
 
+        autoRemoveExpiredStoreNames();
+
         // Location client
         locationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
@@ -106,12 +108,29 @@ public class NotificationsFragment extends Fragment {
             requireActivity().finish();
         });
 
-        resetBtn.setOnClickListener(v ->
-                userRef.child("stock_data").setValue(null)
-                        .addOnSuccessListener(aVoid ->
-                                Toast.makeText(getContext(), "Quantity updated", Toast.LENGTH_SHORT).show())
-                        .addOnFailureListener(e ->
-                                Toast.makeText(getContext(), "Quantity Reset failed: " + e.getMessage(), Toast.LENGTH_SHORT).show()));
+        resetBtn.setOnClickListener(v -> {
+            userRef.child("stock_data").addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot stockItem : snapshot.getChildren()) {
+                        String storeName = stockItem.child("storeName").getValue(String.class);
+
+                        // If storeName exists, remove only that field
+                        if (storeName != null) {
+                            stockItem.getRef().child("storeName").removeValue();
+                        }
+                    }
+
+                    Toast.makeText(getContext(), "Reset successful!", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(getContext(), "Reset failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+
 
         permissionBtn.setOnClickListener(v -> requestLocationPermission());
 
@@ -202,6 +221,28 @@ public class NotificationsFragment extends Fragment {
                         Toast.makeText(getContext(), "Profile updated", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->
                         Toast.makeText(getContext(), "Update failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    }
+
+    private void autoRemoveExpiredStoreNames(){
+        long threeDaysMillis = 3L * 24 * 60 * 60 * 1000;
+        long now = System.currentTimeMillis();
+
+        userRef.child("stock_data").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                for (DataSnapshot stockItem : snapshot.getChildren()){
+                    Long timestamp = stockItem.child("timestamp").getValue(Long.class);
+                    if (timestamp !=null && (now - timestamp) > threeDaysMillis){
+                        stockItem.getRef().child("storeName").removeValue();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override
