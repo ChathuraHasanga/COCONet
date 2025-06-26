@@ -2,12 +2,14 @@ package com.s92067130.coconet;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,6 +67,7 @@ public class LoginActivity extends AppCompatActivity {
         buttonLogin = findViewById(R.id.loginbtn);
         progressBar = findViewById(R.id.progressbar);
         textView = findViewById(R.id.registerTxt);
+        ImageView togglePassword = findViewById(R.id.togglePassword);
 
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,6 +127,17 @@ public class LoginActivity extends AppCompatActivity {
                             }
                         });
             }
+        });
+
+        togglePassword.setOnClickListener(v->{
+            if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
+                editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                togglePassword.setImageResource(R.drawable.visibility_24dp);
+            }else{
+                editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                togglePassword.setImageResource(R.drawable.visibility_off_24dp);
+            }
+            editTextPassword.setSelection(editTextPassword.getText().length());
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {

@@ -10,11 +10,14 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.InputType;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,6 +100,8 @@ public class RegisterActivity extends AppCompatActivity {
         textView = findViewById(R.id.loginTxt);
         locationTxt = findViewById(R.id.locationText);
         permissionBtn = findViewById(R.id.permissionbtn);
+        ImageView togglePassword = findViewById(R.id.togglePassword);
+        ImageView toggleConfirmPassword = findViewById(R.id.toggleConfirmPassword);
 
         permissionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,33 +136,74 @@ public class RegisterActivity extends AppCompatActivity {
                 confirmPassword = String.valueOf(editTextConfirmPassword.getText());
                 String locationTxt = String.valueOf(RegisterActivity.this.locationTxt.getText());
 
-                if (TextUtils.isEmpty(email)){
-                    Toast.makeText(RegisterActivity.this, "Enter Email", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (TextUtils.isEmpty(password)){
-                    Toast.makeText(RegisterActivity.this, "Enter Password", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
+                //check name field empty or not
                 if (TextUtils.isEmpty(name)){
                     Toast.makeText(RegisterActivity.this, "Enter Name", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                //check email field empty or not
+                if (TextUtils.isEmpty(email)){
+                    Toast.makeText(RegisterActivity.this, "Enter Email", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check email format correct or not
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                    Toast.makeText(RegisterActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check contact number field empty or not
                 if (TextUtils.isEmpty(contactNumber)){
                     Toast.makeText(RegisterActivity.this, "Enter Contact Number", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                //check if it's a valid phone number format
+                if (!Patterns.PHONE.matcher(contactNumber).matches()){
+                    Toast.makeText(RegisterActivity.this, "Enter valid contact number", Toast.LENGTH_SHORT).show();
+                }
+
+                //check location field is empty or not
+                if (TextUtils.isEmpty(locationTxt)){
+                    Toast.makeText(RegisterActivity.this, "Enter Location", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check password field empty or not
+                if (TextUtils.isEmpty(password)){
+                    Toast.makeText(RegisterActivity.this, "Enter Password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check password length is less than 6 characters or not
+                if (password.length() < 6){
+                    Toast.makeText(RegisterActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check password strength
+                if (!password.matches(".*[A-Z].*") || !password.matches(".*\\d.*") || !password.matches(".*[!@#$%^&*()].*")){
+                    Toast.makeText(RegisterActivity.this, "Password must include uppercase, number, and symbol", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check confirm password field empty or not
                 if (TextUtils.isEmpty(confirmPassword)){
                     Toast.makeText(RegisterActivity.this, "Enter Confirm Password", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if (TextUtils.isEmpty(locationTxt)){
-                    Toast.makeText(RegisterActivity.this, "Enter Location", Toast.LENGTH_SHORT).show();
+                //check confirm password length is less than 6 characters or not
+                if (confirmPassword.length() < 6){
+                    Toast.makeText(RegisterActivity.this, "Confirm Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check password and confirm password match or not
+                if (!password.equals(confirmPassword)){
+                    Toast.makeText(RegisterActivity.this, "Password and Confirm password should same", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -188,6 +234,27 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        togglePassword.setOnClickListener(v->{
+            if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
+                editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                togglePassword.setImageResource(R.drawable.visibility_24dp);
+            }else{
+                editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                togglePassword.setImageResource(R.drawable.visibility_off_24dp);
+            }
+            editTextPassword.setSelection(editTextPassword.getText().length());
+        });
+
+        toggleConfirmPassword.setOnClickListener(v->{
+            if (editTextConfirmPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
+                editTextConfirmPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                toggleConfirmPassword.setImageResource(R.drawable.visibility_24dp);
+            }else{
+                editTextConfirmPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                toggleConfirmPassword.setImageResource(R.drawable.visibility_off_24dp);
+            }
+            editTextConfirmPassword.setSelection(editTextConfirmPassword.getText().length());
+        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
