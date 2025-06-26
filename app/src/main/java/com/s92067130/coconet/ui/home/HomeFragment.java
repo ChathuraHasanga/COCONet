@@ -110,20 +110,10 @@ public class HomeFragment extends Fragment {
 
                     long firstStockTimestamp = Long.MAX_VALUE;
 
-                    if (district == null) {
-                        district = "";
-                    }
-
                     for (DataSnapshot stockSnap : userSnap.child("stock_data").getChildren()) {
                         Long ts = stockSnap.child("timestamp").getValue(Long.class);
                         Integer qty = stockSnap.child("quantity").getValue(Integer.class);
                         String storeName = stockSnap.child("storeName").getValue(String.class);
-                        String stockDistrict = stockSnap.child("district").getValue(String.class);
-
-                        //ensure district is not nll
-                        if (stockDistrict == null) {
-                            stockDistrict = "";
-                        }
 
                         if (ts != null && qty != null) {
                             if (storeName != null && !storeName.isEmpty()) {
@@ -134,11 +124,12 @@ public class HomeFragment extends Fragment {
                                 if (ts >= todayStartMillis) {
                                     totalStockToday += qty;
                                     hasValidStoreToday = true;
-
-                                    if (district.equals(stockDistrict)) {
+                                    
+                                    if (!userSnap.getKey().equals(uid) && storeName != null){
                                         nearbyStockQty++;
                                         break;
                                     }
+
                                 }
                                 else {
                                     hasAnyValidStoreBefore = true;
@@ -163,7 +154,7 @@ public class HomeFragment extends Fragment {
                 stockLevels.setText(String.valueOf(totalStockToday));
                 HomeFragment.this.pendingStock.setText(String.valueOf(pendingUserCount));
                 newSuppliers.setText(String.valueOf(newUserToday));
-                nearbyStock.setText(String.valueOf(nearbyStockQty -1)); // Exclude self from nearby stock count
+                nearbyStock.setText(String.valueOf(nearbyStockQty)); // Exclude self from nearby stock count
             }
 
             @Override
@@ -180,17 +171,6 @@ public class HomeFragment extends Fragment {
         calender.set(Calendar.SECOND,0);
         calender.set(Calendar.MILLISECOND,0);
         return calender.getTimeInMillis();
-    }
-
-    private double calculateDistanceKm(double lat1, double lon1, double lat2, double lon2) {
-        double R = 6371.0; //get earth's radius in km
-        double dLat = Math.toRadians(lat2- lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
-        double a = Math.sin(dLat /2) * Math.cos(Math.sin(dLat/2)) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                Math.sin(dLat/2) * Math.sin(dLon/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return R * c; //distance in km
     }
 
     @Override
