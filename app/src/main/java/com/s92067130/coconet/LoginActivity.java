@@ -3,6 +3,7 @@ package com.s92067130.coconet;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -82,14 +83,27 @@ public class LoginActivity extends AppCompatActivity {
                 email = String.valueOf(editTextEmail.getText());
                 password = String.valueOf(editTextPassword.getText());
 
-
+                //check email field is empty or not
                 if (TextUtils.isEmpty(email)){
                     Toast.makeText(LoginActivity.this, "Enter Email", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
+                //check email format correct or not
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                    Toast.makeText(LoginActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check password field is empty or not
                 if (TextUtils.isEmpty(password)){
                     Toast.makeText(LoginActivity.this, "Enter Password", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //check password length is less than 6 characters or not
+                if (password.length() < 6){
+                    Toast.makeText(LoginActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
