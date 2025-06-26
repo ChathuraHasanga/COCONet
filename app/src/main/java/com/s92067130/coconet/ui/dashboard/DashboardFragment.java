@@ -40,52 +40,66 @@ import org.w3c.dom.Text;
 import java.util.List;
 import java.util.Locale;
 
+//DashboardFragment displays a map and user stock data as markers from firebase.
 public class DashboardFragment extends Fragment implements OnMapReadyCallback {
 
     private FragmentDashboardBinding binding;
-
-    // initialize GoogleMap instance
-    private GoogleMap myMap;
+    private GoogleMap myMap;    // initialize GoogleMap instance
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        DashboardViewModel dashboardViewModel =
-                new ViewModelProvider(this).get(DashboardViewModel.class);
+        try {
+            DashboardViewModel dashboardViewModel =
+                    new ViewModelProvider(this).get(DashboardViewModel.class);
 
-        binding = FragmentDashboardBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+            binding = FragmentDashboardBinding.inflate(inflater, container, false);
+            View root = binding.getRoot();
 
-        final TextView textView = binding.textDashboard;
-        dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+            //set dashboard text
+            final TextView textView = binding.textDashboard;
+            dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+            //set up the map fragment and register callback
+            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+            mapFragment.getMapAsync(this);
 
-        //Access the EditText and ImageView for searching locations
-        EditText locationInput = root.findViewById(R.id.editLocationInput);
-        ImageView searchButton = root.findViewById(R.id.searchBtn);
+            //Access the EditText and ImageView for searching locations
+            EditText locationInput = root.findViewById(R.id.editLocationInput);
+            ImageView searchButton = root.findViewById(R.id.searchBtn);
 
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String locationName = locationInput.getText().toString().trim();
-                if(!locationName.isEmpty()){
-                    findLocationByName(locationName);
-                }else {
-                    Toast.makeText(getContext(), "Please enter a location", Toast.LENGTH_SHORT).show();
+            // set click listener to search for user-entered location
+            searchButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        String locationName = locationInput.getText().toString().trim();
+                        if (!locationName.isEmpty()) {
+                            findLocationByName(locationName);
+                        } else {
+                            Toast.makeText(getContext(), "Please enter a location", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Search error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
-            }
-        });
-        return root;
+            });
+            return root;
+        }catch (Exception e){
+            Toast.makeText(getContext(), "Initializing error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
+        }
     }
 
+    // Finds and zooms to a location by name using Geocoder.
     private void findLocationByName(String locationName) {
-        Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
         try {
+            Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
             List<Address> addresses = geocoder.getFromLocationName(locationName,1);
             if (addresses != null && !addresses.isEmpty()){
                 Address address = addresses.get(0);
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+
+                // Add marker and zoom
                 myMap.addMarker(new MarkerOptions().position(latLng).title(locationName));
                 myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
 
@@ -98,103 +112,121 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    /**
+     * Loads user Locations and latest stock data from firebase and adds them as markers.
+     */
     private void loadUserLocationsFromDatabase() {
-        DatabaseReference databaseRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("users");
+        try {
+            DatabaseReference databaseRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
+                    .getReference("users");
 
-        databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                    String name = userSnapshot.child("name").getValue(String.class);
-                    String locationName = userSnapshot.child("locationTxt").getValue(String.class);
-                    Double lat = userSnapshot.child("latitude").getValue(Double.class);
-                    Double lng = userSnapshot.child("longitude").getValue(Double.class);
+            databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                        String name = userSnapshot.child("name").getValue(String.class);
+                        String locationName = userSnapshot.child("locationTxt").getValue(String.class);
+                        Double lat = userSnapshot.child("latitude").getValue(Double.class);
+                        Double lng = userSnapshot.child("longitude").getValue(Double.class);
 
-                    // Check if location is available
-                    if (lat != null && lng != null && name != null) {
-                        DataSnapshot stockDataSnap = userSnapshot.child("stock_data");
-                        Stock latestStock = null;
-                        long latestTime = Long.MIN_VALUE;
+                        // Check if location is available
+                        if (lat != null && lng != null && name != null) {
+                            DataSnapshot stockDataSnap = userSnapshot.child("stock_data");
+                            Stock latestStock = null;
+                            long latestTime = Long.MIN_VALUE;
 
-                        // Loop through stock entries to find latest
-                        for (DataSnapshot stockSnap : stockDataSnap.getChildren()) {
-                            Stock stock = stockSnap.getValue(Stock.class);
-                            if (stock != null && stock.timestamp > latestTime) {
-                                latestTime = stock.timestamp;
-                                latestStock = stock;
+                            // Loop through stock entries to find latest
+                            for (DataSnapshot stockSnap : stockDataSnap.getChildren()) {
+                                Stock stock = stockSnap.getValue(Stock.class);
+                                if (stock != null && stock.timestamp > latestTime) {
+                                    latestTime = stock.timestamp;
+                                    latestStock = stock;
+                                }
                             }
-                        }
 
-                        // Only add marker if stock exists
-                        if (latestStock != null && latestStock.storeName != null) {
-                            LatLng position = new LatLng(lat, lng);
-                            String infoText = "Store: " + latestStock.storeName +
-                                    "\nCurrent stock: " + latestStock.quantity+
-                                    "\nOn: " + latestStock.date;
+                            // Only add marker if stock exists
+                            if (latestStock != null && latestStock.storeName != null) {
+                                LatLng position = new LatLng(lat, lng);
+                                String infoText = "Store: " + latestStock.storeName +
+                                        "\nCurrent stock: " + latestStock.quantity+
+                                        "\nOn: " + latestStock.date;
 
-                            myMap.addMarker(new MarkerOptions()
-                                    .position(position)
-                                    .title(name)
-                                    .snippet(infoText));
+                                myMap.addMarker(new MarkerOptions()
+                                        .position(position)
+                                        .title(name)
+                                        .snippet(infoText));
+                            }
                         }
                     }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to load user stock locations", Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(getContext(), "Failed to load user stock locations", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }catch (Exception e){
+            Toast.makeText(getContext(), "Error loading markers: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
-
+    /**
+     * Called when the map is ready to be used. Initializes map UI and loads markers.
+     */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        myMap = googleMap;
-//        LatLng place1 = new LatLng(7.073074876678307, 80.01608941396255);
-//        myMap.addMarker(new MarkerOptions().position(place1).title("Gampaha"));
-//        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place1, 18.0f));
-//        myMap.getUiSettings().setZoomControlsEnabled(true);
+        try {
+            myMap = googleMap;
 
-        LatLng sriLankaCenter = new LatLng(7.8731, 80.7718);
-        myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 7.5f));
+            //center on Sri Lanka with default zoom
+            LatLng sriLankaCenter = new LatLng(7.8731, 80.7718);
+            myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 7.5f));
+            myMap.getUiSettings().setZoomControlsEnabled(true);
 
-        myMap.getUiSettings().setZoomControlsEnabled(true);
+            //set custom info
+            myMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                @Nullable
+                @Override
+                public View getInfoWindow(@NonNull com.google.android.gms.maps.model.Marker marker) {
+                    return null;
+                }
 
-        //set custom info
-        myMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
-            @Nullable
-            @Override
-            public View getInfoWindow(@NonNull com.google.android.gms.maps.model.Marker marker) {
-                return null;
-            }
+                @Override
+                public View getInfoContents(@NonNull com.google.android.gms.maps.model.Marker marker) {
 
-            @Override
-            public View getInfoContents(@NonNull com.google.android.gms.maps.model.Marker marker) {
+                    // Inflate custom layout for info window
+                    View view = LayoutInflater.from(getContext()).inflate(R.layout.custom_mapinfo, null);
 
-                // Inflate custom layout for info window
-                View view = LayoutInflater.from(getContext()).inflate(R.layout.custom_mapinfo, null);
+                    //TextView title = view.findViewById(R.id.infoTitle);
+                    TextView snippet = view.findViewById(R.id.infoSnippet);
 
-                //TextView title = view.findViewById(R.id.infoTitle);
-                TextView snippet = view.findViewById(R.id.infoSnippet);
+                    //title.setText(marker.getTitle());
+                    snippet.setText(marker.getSnippet());
 
-                //title.setText(marker.getTitle());
-                snippet.setText(marker.getSnippet());
+                    return view;
+                }
+            });
 
-                return view;
-            }
-        });
+            // Set a click listener for info windows
+            myMap.setOnInfoWindowClickListener(marker -> {
+                try {
+                    Intent intent = new Intent(requireContext(), ContactActivity.class);
+                    startActivity(intent);
+                }catch (Exception e){
+                    Toast.makeText(getContext(), "Error opening contact activity", Toast.LENGTH_SHORT).show();
+                }
+            });
 
-        myMap.setOnInfoWindowClickListener(marker -> {
-            Intent intent = new Intent(requireContext(), ContactActivity.class);
-            startActivity(intent);
-        });
-
-        //load markers from firebase
-        loadUserLocationsFromDatabase();
+            //load markers from firebase
+            loadUserLocationsFromDatabase();
+        }catch (Exception e){
+            Toast.makeText(getContext(), "Map initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
+
+    /**
+     * clean up view binding when view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

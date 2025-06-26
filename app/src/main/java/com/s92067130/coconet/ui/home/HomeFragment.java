@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -31,139 +32,177 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+// Home fragment displays the welcome message and dashboard summery data.
 public class HomeFragment extends Fragment {
 
     FirebaseAuth mAuth;
-    TextView textView;
+    TextView welcomeText;
     DatabaseReference mDatabase;
     private FragmentHomeBinding binding;
     private TextView stockLevels, pendingStock, newSuppliers, nearbyStock;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        HomeViewModel homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
 
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        try {
+            // Initialize view model
+            HomeViewModel homeViewModel =
+                    new ViewModelProvider(this).get(HomeViewModel.class);
 
-        textView = root.findViewById(R.id.welcomeTxt);
-        stockLevels = root.findViewById(R.id.card1).findViewById(R.id.textCurrentStock);
-        pendingStock = root.findViewById(R.id.card2).findViewById(R.id.textPendingStock);
-        newSuppliers = root.findViewById(R.id.card3).findViewById(R.id.textNewSuppliers);
-        nearbyStock = root.findViewById(R.id.card4).findViewById(R.id.textNearbyStock);
-        mAuth = FirebaseAuth.getInstance();
+            binding = FragmentHomeBinding.inflate(inflater, container, false);
+            View root = binding.getRoot();
 
-        FirebaseUser user= mAuth.getCurrentUser();
+            //initialize views
+            welcomeText = root.findViewById(R.id.welcomeTxt);
+            stockLevels = root.findViewById(R.id.card1).findViewById(R.id.textCurrentStock);
+            pendingStock = root.findViewById(R.id.card2).findViewById(R.id.textPendingStock);
+            newSuppliers = root.findViewById(R.id.card3).findViewById(R.id.textNewSuppliers);
+            nearbyStock = root.findViewById(R.id.card4).findViewById(R.id.textNearbyStock);
 
-        if (user != null) {
-            String uid = user.getUid();
+            //firebase authentication
+            mAuth = FirebaseAuth.getInstance();
+            FirebaseUser user= mAuth.getCurrentUser();
 
-            mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(uid);
+            //If a user is logged in, load their data and dashboard info
+            if (user != null) {
+                String uid = user.getUid();
 
-            mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(uid);
+
+                //fetch current user's name from database
+                mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        try {
+                            if (snapshot.exists()){
+                                String name = snapshot.child("name").getValue(String.class);
+                                welcomeText.setText("Welcome, " + name + "!");
+                            }else {
+                                welcomeText.setText("Welcome, User!");
+                            }
+                        }catch (Exception e){
+                            e.printStackTrace();
+                            Toast.makeText(getContext(), "Error loading user info", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(), "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                //load dashboard stats
+                loadDashboard(uid);
+            }
+
+            final TextView textView = binding.textHome;
+            homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+            return root;
+        }catch (Exception e){
+            Toast.makeText(getContext(), "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            return null;
+        }
+    }
+
+    /**
+     * Fetch dashboard summery data for the user and others from firebase
+     * includes total stock today, pending entries, new suppliers, and nearby stock count.
+     */
+    private void loadDashboard(String uid) {
+        try {
+            DatabaseReference usersRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
+                    .getReference("users");
+
+            long todayStartMillis = getStartOfDayMillis();
+
+            usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
+
+                int totalStockToday = 0;
+                int pendingUserCount = 0;
+                int newUserToday = 0;
+                int nearbyStockQty = 0;
+
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    if (snapshot.exists()){
-                        String name = snapshot.child("name").getValue(String.class);
-                        textView.setText("Welcome, " + name + "!");
-                    }else {
-                        textView.setText("Welcome, User!");
+                    try {
+                        //loop through all users to analyze their stock data
+                        for (DataSnapshot userSnap : snapshot.getChildren()) {
+                            String district = userSnap.child("district").getValue(String.class);
+
+                            boolean hasValidStoreToday = false;
+                            boolean hasAnyValidStoreBefore = false;
+                            boolean hasNullStoreName = false;
+                            long firstStockTimestamp = Long.MAX_VALUE;
+
+                            // loop through each user's stock entries
+                            for (DataSnapshot stockSnap : userSnap.child("stock_data").getChildren()) {
+                                Long ts = stockSnap.child("timestamp").getValue(Long.class);
+                                Integer qty = stockSnap.child("quantity").getValue(Integer.class);
+                                String storeName = stockSnap.child("storeName").getValue(String.class);
+
+                                if (ts != null && qty != null) {
+                                    if (storeName != null && !storeName.isEmpty()) {
+
+                                        // Track first stock entry time.
+                                        if (ts < firstStockTimestamp) {
+                                            firstStockTimestamp = ts;
+                                        }
+
+                                        //check today's stock entries
+                                        if (ts >= todayStartMillis) {
+                                            totalStockToday += qty;
+                                            hasValidStoreToday = true;
+
+                                            //count other user's stock as nearby stock
+                                            if (!userSnap.getKey().equals(uid) && storeName != null){
+                                                nearbyStockQty++;
+                                                break;
+                                            }
+                                        }
+                                        else {
+                                            hasAnyValidStoreBefore = true;
+                                        }
+                                    } else {
+                                        hasNullStoreName = true;
+                                    }
+                                }
+                            }
+
+                            //  Count as new suppliers only if their stock is from today
+                            if (hasValidStoreToday && firstStockTimestamp >= todayStartMillis) {
+                                newUserToday++;
+                            }
+
+                            // Pending = user only has null storeName stock entries
+                            if (hasNullStoreName && !hasValidStoreToday && !hasAnyValidStoreBefore) {
+                                pendingUserCount++;
+                            }
+                        }
+
+                        //UI updates
+                        stockLevels.setText(String.valueOf(totalStockToday));
+                        HomeFragment.this.pendingStock.setText(String.valueOf(pendingUserCount));
+                        newSuppliers.setText(String.valueOf(newUserToday));
+                        nearbyStock.setText(String.valueOf(nearbyStockQty)); // Exclude self from nearby stock count
+
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Error processing dashboard",Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-
+                    Toast.makeText(getContext(), "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
-
-            loadDashboard(uid);
+        }catch (Exception e){
+            Toast.makeText(getContext(), "Database error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
-        final TextView textView = binding.textHome;
-        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        return root;
     }
 
-    private void loadDashboard(String uid) {
-        DatabaseReference usersRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("users");
-
-        long todayStartMillis = getStartOfDayMillis();
-
-        usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
-
-            int totalStockToday = 0;
-            int pendingUserCount = 0;
-            int newUserToday = 0;
-            int nearbyStockQty = 0;
-
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                for (DataSnapshot userSnap : snapshot.getChildren()) {
-                    String district = userSnap.child("district").getValue(String.class);
-
-                    boolean hasValidStoreToday = false;
-                    boolean hasAnyValidStoreBefore = false;
-                    boolean hasNullStoreName = false;
-
-                    long firstStockTimestamp = Long.MAX_VALUE;
-
-                    for (DataSnapshot stockSnap : userSnap.child("stock_data").getChildren()) {
-                        Long ts = stockSnap.child("timestamp").getValue(Long.class);
-                        Integer qty = stockSnap.child("quantity").getValue(Integer.class);
-                        String storeName = stockSnap.child("storeName").getValue(String.class);
-
-                        if (ts != null && qty != null) {
-                            if (storeName != null && !storeName.isEmpty()) {
-                                if (ts < firstStockTimestamp) {
-                                    firstStockTimestamp = ts;
-                                }
-
-                                if (ts >= todayStartMillis) {
-                                    totalStockToday += qty;
-                                    hasValidStoreToday = true;
-                                    
-                                    if (!userSnap.getKey().equals(uid) && storeName != null){
-                                        nearbyStockQty++;
-                                        break;
-                                    }
-
-                                }
-                                else {
-                                    hasAnyValidStoreBefore = true;
-                                }
-                            } else {
-                                hasNullStoreName = true;
-                            }
-                        }
-                    }
-
-                    //  Count as NEW SUPPLIER only if their stock is from today
-                    if (hasValidStoreToday && firstStockTimestamp >= todayStartMillis) {
-                        newUserToday++;
-                    }
-
-                    // Pending = user only has null storeName stock entries
-                    if (hasNullStoreName && !hasValidStoreToday && !hasAnyValidStoreBefore) {
-                        pendingUserCount++;
-                    }
-                }
-
-                stockLevels.setText(String.valueOf(totalStockToday));
-                HomeFragment.this.pendingStock.setText(String.valueOf(pendingUserCount));
-                newSuppliers.setText(String.valueOf(newUserToday));
-                nearbyStock.setText(String.valueOf(nearbyStockQty)); // Exclude self from nearby stock count
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-            }
-        });
-    }
-
-
+    //Gets the start of the current day in milliseconds.
     private long getStartOfDayMillis(){
         Calendar calender = Calendar.getInstance();
         calender.set(Calendar.HOUR_OF_DAY,0);
@@ -178,5 +217,4 @@ public class HomeFragment extends Fragment {
         super.onDestroyView();
         binding = null;
     }
-
 }
