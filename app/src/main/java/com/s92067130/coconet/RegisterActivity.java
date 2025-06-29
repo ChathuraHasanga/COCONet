@@ -49,6 +49,7 @@ import java.util.UUID;
 
 public class RegisterActivity extends AppCompatActivity {
 
+    // Declare variables for views and Firebase
     EditText editTextEmail, editTextPassword, editTextName, editContactNumber, editTextConfirmPassword;
     Button buttonReg;
     FirebaseAuth mAuth;
@@ -63,6 +64,7 @@ public class RegisterActivity extends AppCompatActivity {
     private Double latitude = null;
     private Double longitude = null;
 
+    //Redirect to MainActivity if already signed in
     @Override
     public void onStart() {
         super.onStart();
@@ -74,6 +76,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
+    //Main initialization method
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -82,13 +85,17 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         //hide the action bar
-        getSupportActionBar().hide();
+        if (getSupportActionBar() != null){
+            getSupportActionBar().hide();
+        }
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
 
+        //initialize firebase
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference();
+
         // Initialize views
         editTextEmail = findViewById(R.id.email);
         editTextPassword = findViewById(R.id.password);
@@ -103,6 +110,7 @@ public class RegisterActivity extends AppCompatActivity {
         ImageView togglePassword = findViewById(R.id.togglePassword);
         ImageView toggleConfirmPassword = findViewById(R.id.toggleConfirmPassword);
 
+        //Request location permission or fetch location if permission already granted
         permissionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,6 +122,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        //Navigate to login page
         textView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -123,6 +132,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        //Handle register button click
         buttonReg.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -139,74 +149,88 @@ public class RegisterActivity extends AppCompatActivity {
                 //check name field empty or not
                 if (TextUtils.isEmpty(name)){
                     Toast.makeText(RegisterActivity.this, "Enter Name", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check email field empty or not
                 if (TextUtils.isEmpty(email)){
                     Toast.makeText(RegisterActivity.this, "Enter Email", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check email format correct or not
                 if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
                     Toast.makeText(RegisterActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check contact number field empty or not
                 if (TextUtils.isEmpty(contactNumber)){
                     Toast.makeText(RegisterActivity.this, "Enter Contact Number", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check if it's a valid phone number format
                 if (!Patterns.PHONE.matcher(contactNumber).matches()){
                     Toast.makeText(RegisterActivity.this, "Enter valid contact number", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
+                    return;
                 }
 
                 //check location field is empty or not
                 if (TextUtils.isEmpty(locationTxt)){
                     Toast.makeText(RegisterActivity.this, "Enter Location", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check password field empty or not
                 if (TextUtils.isEmpty(password)){
                     Toast.makeText(RegisterActivity.this, "Enter Password", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check password length is less than 6 characters or not
                 if (password.length() < 6){
                     Toast.makeText(RegisterActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check password strength
                 if (!password.matches(".*[A-Z].*") || !password.matches(".*\\d.*") || !password.matches(".*[!@#$%^&*()].*")){
                     Toast.makeText(RegisterActivity.this, "Password must include uppercase, number, and symbol", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check confirm password field empty or not
                 if (TextUtils.isEmpty(confirmPassword)){
                     Toast.makeText(RegisterActivity.this, "Enter Confirm Password", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check confirm password length is less than 6 characters or not
                 if (confirmPassword.length() < 6){
                     Toast.makeText(RegisterActivity.this, "Confirm Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
                 //check password and confirm password match or not
                 if (!password.equals(confirmPassword)){
                     Toast.makeText(RegisterActivity.this, "Password and Confirm password should same", Toast.LENGTH_SHORT).show();
+                    progressBar.setVisibility(View.GONE);
                     return;
                 }
 
+                //Register user with email and password
                 mAuth.createUserWithEmailAndPassword(email, password)
                         .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                             @Override
@@ -234,6 +258,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
 
+        //Toggle visibility for password fields.
         togglePassword.setOnClickListener(v->{
             if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
                 editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
@@ -245,6 +270,7 @@ public class RegisterActivity extends AppCompatActivity {
             editTextPassword.setSelection(editTextPassword.getText().length());
         });
 
+        //Toggle visibility for confirm password fields.
         toggleConfirmPassword.setOnClickListener(v->{
             if (editTextConfirmPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
                 editTextConfirmPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
@@ -263,6 +289,7 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    //Send login QR code via email to user
     private void sendEmailWithQRCode(String name, String email, String loginToken) {
         new Thread(() -> {
             try{
@@ -328,35 +355,40 @@ public class RegisterActivity extends AppCompatActivity {
                 });
     }
 
+    //fetch and display user location
     private void fetchLocation(){
-        FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, location -> {
-            if (location != null) {
+        try {
+            FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, location -> {
+                if (location != null) {
 
-                latitude = location.getLatitude();
-                longitude = location.getLongitude();
+                    latitude = location.getLatitude();
+                    longitude = location.getLongitude();
 
-                //convert location to address
-                Geocoder geocoder = new Geocoder(RegisterActivity.this, Locale.getDefault());
-                try {
-                    List<Address> addresses = geocoder.getFromLocation(latitude,longitude,1);
-                    if (addresses != null && !addresses.isEmpty()){
-                        String address = addresses.get(0).getAddressLine(0);
-                        district = addresses.get(0).getSubAdminArea();
+                    //convert location to address
+                    Geocoder geocoder = new Geocoder(RegisterActivity.this, Locale.getDefault());
+                    try {
+                        List<Address> addresses = geocoder.getFromLocation(latitude,longitude,1);
+                        if (addresses != null && !addresses.isEmpty()){
+                            String address = addresses.get(0).getAddressLine(0);
+                            district = addresses.get(0).getSubAdminArea();
 
-                        locationTxt.setText(address); //set address in editText
-                    }else{
-                        locationTxt.setText("Unable to get address.");
+                            locationTxt.setText(address); //set address in editText
+                        }else{
+                            locationTxt.setText("Unable to get address.");
+                        }
+                    }catch (IOException e){
+                        e.printStackTrace();
+                        locationTxt.setText("Geocoder error");
                     }
-                }catch (IOException e){
-                    e.printStackTrace();
-                    locationTxt.setText("Geocoder error");
-                }
 
-            }else {
-                locationTxt.setText("Location not available");
-            }
-        });
+                }else {
+                    locationTxt.setText("Location not available");
+                }
+            });
+        }catch (Exception e){
+            Toast.makeText(this, "Error fetching location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     //User model class for saving details in the database

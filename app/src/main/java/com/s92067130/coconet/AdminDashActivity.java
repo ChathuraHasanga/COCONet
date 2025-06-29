@@ -9,8 +9,10 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+//Activity class for Admin Dashboard screen
 public class AdminDashActivity extends AppCompatActivity {
 
+    //called when the activity is starting.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -21,10 +23,17 @@ public class AdminDashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         //hide the action bar
-        getSupportActionBar().hide();
+        if(getSupportActionBar() != null){
+            getSupportActionBar().hide();
+        }
 
+        //enable edge-to-edge layout.
         EdgeToEdge.enable(this);
+
+        //set layout from resource file.
         setContentView(R.layout.activity_admin_dash);
+
+        //Apply system bar insets to the root view with padding.
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

@@ -27,141 +27,189 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+// LoginActivity- Handles user authentication through firebase.
 public class LoginActivity extends AppCompatActivity {
 
+    //Declare variables for UI components.
     EditText editTextEmail, editTextPassword;
     Button buttonLogin;
     FirebaseAuth mAuth;
     ProgressBar progressBar;
     TextView textView;
 
+    //check if a user already logged in when activity starts.
     @Override
     public void onStart() {
         super.onStart();
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
-            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-            startActivity(intent);
-            finish();
+        try {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if(currentUser != null){
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+                finish(); //prevent going back to the login screen.
+            }
+        }catch (Exception e){
+            Toast.makeText(this, "Startup error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 
+    //called when the activity is first created.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //hide tool bar
-        //call requestWindowFeature
+        //hide title bar and action bar for clean login screen.
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         super.onCreate(savedInstanceState);
 
-        //hide the action bar
-        getSupportActionBar().hide();
+        if (getSupportActionBar() != null){
+            getSupportActionBar().hide();
+        }
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
 
-        mAuth = FirebaseAuth.getInstance();
-        editTextEmail = findViewById(R.id.email);
-        editTextPassword = findViewById(R.id.password);
-        buttonLogin = findViewById(R.id.loginbtn);
-        progressBar = findViewById(R.id.progressbar);
-        textView = findViewById(R.id.registerTxt);
-        ImageView togglePassword = findViewById(R.id.togglePassword);
+        try {
+            //Initialize firebase authentication and UI components.
+            mAuth = FirebaseAuth.getInstance();
+            editTextEmail = findViewById(R.id.email);
+            editTextPassword = findViewById(R.id.password);
+            buttonLogin = findViewById(R.id.loginbtn);
+            progressBar = findViewById(R.id.progressbar);
+            textView = findViewById(R.id.registerTxt);
+            ImageView togglePassword = findViewById(R.id.togglePassword);
 
-        textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-
-        buttonLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                progressBar.setVisibility(view.VISIBLE);
-                String email, password;
-                email = String.valueOf(editTextEmail.getText());
-                password = String.valueOf(editTextPassword.getText());
-
-                //check email field is empty or not
-                if (TextUtils.isEmpty(email)){
-                    Toast.makeText(LoginActivity.this, "Enter Email", Toast.LENGTH_SHORT).show();
-                    return;
+            //Set click listeners for register text.
+            textView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    try {
+                        Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
+                        startActivity(intent);
+                        finish();
+                    }catch (Exception e){
+                        Toast.makeText(LoginActivity.this, "Navigation Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
+            });
 
-                //check email format correct or not
-                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-                    Toast.makeText(LoginActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
-                    return;
+            //Login button logic with full validation.
+            buttonLogin.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    progressBar.setVisibility(view.VISIBLE);
+
+                    try {
+                        String email, password;
+                        email = String.valueOf(editTextEmail.getText()).trim();
+                        password = String.valueOf(editTextPassword.getText()).trim();
+
+                        //check email field is empty or not
+                        if (TextUtils.isEmpty(email)){
+                            Toast.makeText(LoginActivity.this, "Enter Email", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        //check email format correct or not
+                        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+                            Toast.makeText(LoginActivity.this, "Invalid email format", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        //check password field is empty or not
+                        if (TextUtils.isEmpty(password)){
+                            Toast.makeText(LoginActivity.this, "Enter Password", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        //check password length is less than 6 characters or not
+                        if (password.length() < 6){
+                            Toast.makeText(LoginActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+                            progressBar.setVisibility(View.GONE);
+                            return;
+                        }
+
+                        //Firebase sign-in logic
+                        mAuth.signInWithEmailAndPassword(email, password)
+                                .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<AuthResult> task) {
+                                        progressBar.setVisibility(View.GONE);
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
+                                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                            startActivity(intent);
+                                            finish();
+                                        } else {
+                                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                });
+                    }catch (Exception e){
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(LoginActivity.this, "Login Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 }
+            });
 
-                //check password field is empty or not
-                if (TextUtils.isEmpty(password)){
-                    Toast.makeText(LoginActivity.this, "Enter Password", Toast.LENGTH_SHORT).show();
-                    return;
+            //toggle password visibility
+            togglePassword.setOnClickListener(v->{
+                try {
+                    if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
+                        editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                        togglePassword.setImageResource(R.drawable.visibility_24dp);
+                    }else{
+                        editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                        togglePassword.setImageResource(R.drawable.visibility_off_24dp);
+                    }
+                    editTextPassword.setSelection(editTextPassword.getText().length());
+                }catch (Exception e){
+                    Toast.makeText(this, "Toggle error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 }
+            });
 
-                //check password length is less than 6 characters or not
-                if (password.length() < 6){
-                    Toast.makeText(LoginActivity.this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                progressBar.setVisibility(View.GONE);
-                                if (task.isSuccessful()) {
-                                    Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                    startActivity(intent);
-                                    finish();
-                                } else {
-                                    Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        });
-            }
-        });
-
-        togglePassword.setOnClickListener(v->{
-            if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
-                editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                togglePassword.setImageResource(R.drawable.visibility_24dp);
-            }else{
-                editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                togglePassword.setImageResource(R.drawable.visibility_off_24dp);
-            }
-            editTextPassword.setSelection(editTextPassword.getText().length());
-        });
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+            //system bar inset handling.
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }catch (Exception e){
+            Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     //navigate to Homepage when login button is clicked
     public void onLoginBtnClick(View view) {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
+        try {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     //navigate to ScanActivity user interface when scan qr button is clicked
     public void onScanBtnClick(View view) {
-        Intent intent = new Intent(LoginActivity.this, ScanActivity.class);
-        startActivity(intent);
+        try {
+            Intent intent = new Intent(LoginActivity.this, ScanActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
     }
 
     //navigate to RegisterActivity when register button is clicked
     public void onRegisterClick(View view) {
-        Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-        startActivity(intent);
+        try {
+            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -13,21 +13,29 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.s92067130.coconet.ui.dashboard.DashboardFragment;
 
+//This activity is responsible for displaying the contact screen
 public class ContactActivity extends AppCompatActivity {
 
+    //called when the activity is starting
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //call requestWindowFeature
+        //remove the window title to give a full-screen experience
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
 
         //hide the action bar
-        getSupportActionBar().hide();
+        if (getSupportActionBar() != null){
+            getSupportActionBar().hide();
+        }
 
+        //enable edge-to-edge layout
         EdgeToEdge.enable(this);
+
+        //set the contact layout for this activity
         setContentView(R.layout.activity_contact);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);

@@ -4,16 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -22,32 +15,33 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.s92067130.coconet.databinding.ActivityMainBinding;
 import com.s92067130.coconet.ui.dashboard.DashboardFragment;
-import com.s92067130.coconet.ui.home.HomeFragment;
 
+//MainActivity - Hosts the main navigation UI of the application.
 public class MainActivity extends AppCompatActivity {
 
 
     // Declare the binding variable for the layout
     private ActivityMainBinding binding;
 
+    //called when the activity is first created.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //hide tool bar
-        //call requestWindowFeature
+        //request to hide tool bar for fullscreen UI
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
         super.onCreate(savedInstanceState);
 
-        //hide the action bar
-        getSupportActionBar().hide();
+        //hide the action bar if not null
+        if (getSupportActionBar() != null){
+            getSupportActionBar().hide();
+        }
 
+        //inflate the view using view binding.
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //setup bottom navigation view.
         BottomNavigationView navView = findViewById(R.id.nav_view);
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.navigation_home, R.id.navigation_dashboard, R.id.navigation_notifications)
@@ -57,12 +51,19 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupWithNavController(binding.navView, navController);
     }
 
+    /**
+     *Navigate to stockInputActivity when "Add stock" button is clicked.
+     */
     public void onClickAddStock(View view) {
-        // Navigate to StockInputActivity when the add stock button is clicked
-        Intent intent = new Intent(MainActivity.this, StockInputActivity.class);
-        startActivity(intent);
+        try {
+            Intent intent = new Intent(MainActivity.this, StockInputActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
+    //Replace the current fragment with DashboardFragment when the map button is clicked.
     public void OnMapBtnClicked(View view) {
         getSupportFragmentManager()
                 .beginTransaction()

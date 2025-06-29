@@ -14,8 +14,7 @@ public class RegisterSuccess extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //hide tool bar
-        //call requestWindowFeature
+        //request to remove the title bar for fullscreen appearance
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         super.onCreate(savedInstanceState);
