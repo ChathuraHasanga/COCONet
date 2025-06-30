@@ -60,6 +60,7 @@ public class RegisterActivity extends AppCompatActivity {
     EditText locationTxt;
     Button permissionBtn;
     String district;
+    String province;
 
     private Double latitude = null;
     private Double longitude = null;
@@ -241,11 +242,11 @@ public class RegisterActivity extends AppCompatActivity {
                                     FirebaseUser user = mAuth.getCurrentUser();
 
                                     //save user data to realtime database
-                                    saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude, district);
+                                    saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude, district, province);
 
                                     Toast.makeText(RegisterActivity.this, "Account Created.",
                                             Toast.LENGTH_SHORT).show();
-                                    Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                                    Intent intent = new Intent(getApplicationContext(), RegisterSuccess.class);
                                     startActivity(intent);
                                     finish();
                                 } else {
@@ -335,12 +336,12 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     //Method to save user details to Firebase realtime database
-    private void saveUserDetailsToDatabase(String userId, String name,String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district){
+    private void saveUserDetailsToDatabase(String userId, String name,String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district, String province){
 
         String loginToken = UUID.randomUUID().toString(); //generate a unique login token
-        User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude, district);
+        User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude, district, province);
 
-        //save data usder the user's UID
+        //save data under the user's UID
         mDatabase.child("users").child(userId).setValue(user)
                 .addOnCompleteListener(new OnCompleteListener<Void>() {
                     @Override
@@ -372,6 +373,7 @@ public class RegisterActivity extends AppCompatActivity {
                         if (addresses != null && !addresses.isEmpty()){
                             String address = addresses.get(0).getAddressLine(0);
                             district = addresses.get(0).getSubAdminArea();
+                            province = addresses.get(0).getAdminArea();
 
                             locationTxt.setText(address); //set address in editText
                         }else{
@@ -402,8 +404,9 @@ public class RegisterActivity extends AppCompatActivity {
         public Double latitude;
         public Double longitude;
         public String district;
+        public String province;
 
-        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district){
+        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district, String province){
             this.name = name;
             this.contactNumber = contactNumber;
             this.email = email;
@@ -413,6 +416,7 @@ public class RegisterActivity extends AppCompatActivity {
             this.latitude = latitude;
             this.longitude = longitude;
             this.district = district;
+            this.province = province;
         }
     }
 }

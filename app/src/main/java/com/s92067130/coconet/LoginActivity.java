@@ -183,19 +183,19 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     //navigate to Homepage when login button is clicked
-    public void onLoginBtnClick(View view) {
-        try {
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-        }catch (Exception e){
-            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-    }
+//    public void onLoginBtnClick(View view) {
+//        try {
+//            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+//            startActivity(intent);
+//        }catch (Exception e){
+//            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
     //navigate to ScanActivity user interface when scan qr button is clicked
     public void onScanBtnClick(View view) {
         try {
-            Intent intent = new Intent(LoginActivity.this, ScanActivity.class);
+            Intent intent = new Intent(LoginActivity.this, AdminDashActivity.class);
             startActivity(intent);
         }catch (Exception e){
             Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();

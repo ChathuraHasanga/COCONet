@@ -67,4 +67,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
 }
