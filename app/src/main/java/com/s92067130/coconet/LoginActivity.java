@@ -1,6 +1,7 @@
 package com.s92067130.coconet;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.text.TextUtils;
@@ -26,6 +27,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 // LoginActivity- Handles user authentication through firebase.
 public class LoginActivity extends AppCompatActivity {
@@ -138,10 +141,26 @@ public class LoginActivity extends AppCompatActivity {
                                     public void onComplete(@NonNull Task<AuthResult> task) {
                                         progressBar.setVisibility(View.GONE);
                                         if (task.isSuccessful()) {
-                                            Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
-                                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                            startActivity(intent);
-                                            finish();
+                                            FirebaseUser user = mAuth.getCurrentUser();
+                                            if (user != null){
+                                                DatabaseReference userRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
+                                                        .getReference("users").child(user.getUid());
+
+                                                userRef.child("role").get().addOnSuccessListener(roleSnapshot -> {
+                                                    String role= roleSnapshot.getValue(String.class);
+                                                    if (role != null){
+                                                        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                                                        prefs.edit().putString("role",role).apply();
+                                                    }
+                                                    Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
+                                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                                    startActivity(intent);
+                                                    finish();
+                                                }).addOnFailureListener(e -> {
+                                                    Toast.makeText(LoginActivity.this, "Failed to load user role: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                                });
+                                            }
+
                                         } else {
                                             Toast.makeText(LoginActivity.this, "Authentication failed.",
                                                     Toast.LENGTH_SHORT).show();
@@ -182,25 +201,14 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //navigate to Homepage when login button is clicked
-//    public void onLoginBtnClick(View view) {
-//        try {
-//            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-//            startActivity(intent);
-//        }catch (Exception e){
-//            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//        }
-//    }
-
     //navigate to ScanActivity user interface when scan qr button is clicked
     public void onScanBtnClick(View view) {
         try {
-            Intent intent = new Intent(LoginActivity.this, AdminDashActivity.class);
+            Intent intent = new Intent(LoginActivity.this, ScanActivity.class);
             startActivity(intent);
         }catch (Exception e){
             Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
     }
 
     //navigate to RegisterActivity when register button is clicked

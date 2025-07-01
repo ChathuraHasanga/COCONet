@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +22,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.s92067130.coconet.AdminDashActivity;
 import com.s92067130.coconet.MainActivity;
 import com.s92067130.coconet.R;
 import com.s92067130.coconet.StockInputActivity;
@@ -41,6 +43,8 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private TextView stockLevels, pendingStock, newSuppliers, nearbyStock;
 
+    private Button adminDashboardBtn;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -59,6 +63,10 @@ public class HomeFragment extends Fragment {
             newSuppliers = root.findViewById(R.id.card3).findViewById(R.id.textNewSuppliers);
             nearbyStock = root.findViewById(R.id.card4).findViewById(R.id.textNearbyStock);
 
+            //Find the admin dashboard button
+            adminDashboardBtn = root.findViewById(R.id.adminDashboardBtn);
+            adminDashboardBtn.setVisibility(View.GONE);
+
             //firebase authentication
             mAuth = FirebaseAuth.getInstance();
             FirebaseUser user= mAuth.getCurrentUser();
@@ -68,6 +76,28 @@ public class HomeFragment extends Fragment {
                 String uid = user.getUid();
 
                 mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(uid);
+
+                mDatabase.child("role").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String role = snapshot.getValue(String.class);
+                        if (role != null && role.trim().equalsIgnoreCase("admin")){
+                            adminDashboardBtn.setVisibility(View.VISIBLE);
+                        }else {
+                            adminDashboardBtn.setVisibility(View.GONE);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(), "Failed to load role: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                adminDashboardBtn.setOnClickListener(View -> {
+                    Intent intent = new Intent(getActivity(), AdminDashActivity.class);
+                    startActivity(intent);
+                });
 
                 //fetch current user's name from database
                 mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {

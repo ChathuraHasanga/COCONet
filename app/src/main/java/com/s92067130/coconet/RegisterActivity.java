@@ -43,6 +43,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -61,6 +63,8 @@ public class RegisterActivity extends AppCompatActivity {
     Button permissionBtn;
     String district;
     String province;
+    String role = "user"; //default role for new users
+    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
     private Double latitude = null;
     private Double longitude = null;
@@ -242,7 +246,7 @@ public class RegisterActivity extends AppCompatActivity {
                                     FirebaseUser user = mAuth.getCurrentUser();
 
                                     //save user data to realtime database
-                                    saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude, district, province);
+                                    saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude, district, province, date, role);
 
                                     Toast.makeText(RegisterActivity.this, "Account Created.",
                                             Toast.LENGTH_SHORT).show();
@@ -336,10 +340,10 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     //Method to save user details to Firebase realtime database
-    private void saveUserDetailsToDatabase(String userId, String name,String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district, String province){
+    private void saveUserDetailsToDatabase(String userId, String name, String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district, String province, String date, String role){
 
         String loginToken = UUID.randomUUID().toString(); //generate a unique login token
-        User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude, district, province);
+        User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude, district, province, date, this.role);
 
         //save data under the user's UID
         mDatabase.child("users").child(userId).setValue(user)
@@ -405,8 +409,10 @@ public class RegisterActivity extends AppCompatActivity {
         public Double longitude;
         public String district;
         public String province;
+        public String date;
+        public String role;
 
-        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district, String province){
+        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district, String province, String date, String role){
             this.name = name;
             this.contactNumber = contactNumber;
             this.email = email;
@@ -417,6 +423,8 @@ public class RegisterActivity extends AppCompatActivity {
             this.longitude = longitude;
             this.district = district;
             this.province = province;
+            this.date = date;
+            this.role = role;
         }
     }
 }

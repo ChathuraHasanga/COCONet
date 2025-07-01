@@ -1,6 +1,7 @@
 package com.s92067130.coconet;
 
 import android.app.DatePickerDialog;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -114,19 +115,21 @@ public class AdminDashActivity extends AppCompatActivity {
             for (DataSnapshot userSnap : dataSnapshot.getChildren()){
 
                 String province = userSnap.child("province").getValue(String.class);
+                String ownDate = userSnap.child("date").getValue(String.class);
                 if (province == null) province = "Unknown";
 
+                if (ownDate != null && ownDate.equals(selectedDate)) {
+                    newSignupsCount++;
+                }
                 DataSnapshot stockDataSnap = userSnap.child("stock_data");
                 if(!stockDataSnap.exists()) continue;
 
                 boolean isActiveToday = false;
-                Long firstStockTimestamp = null;
 
                 for (DataSnapshot stockEntry : stockDataSnap.getChildren()){
                     String date = stockEntry.child("date").getValue(String.class);
                     Long quantity = stockEntry.child("quantity").getValue(Long.class);
                     String storeName = stockEntry.child("storeName").getValue(String.class);
-                    Long timestamp = stockEntry.child("timestamp").getValue(Long.class);
 
                     if (date != null && quantity != null && storeName != null && date.equals(selectedDate)) {
 
@@ -139,25 +142,8 @@ public class AdminDashActivity extends AppCompatActivity {
 
                         isActiveToday = true;
                     }
-                    if (timestamp != null){
-                        if (firstStockTimestamp == null || timestamp< firstStockTimestamp){
-                            firstStockTimestamp = timestamp;
-                        }
-                    }
                 }
                 if (isActiveToday) activeUsersCount++;
-
-                if (firstStockTimestamp != null){
-                    Calendar tsCal = Calendar.getInstance();
-                    tsCal.setTimeInMillis(firstStockTimestamp);
-                    int tsYear = tsCal.get(Calendar.YEAR);
-                    int tsMonth = tsCal.get(Calendar.MONTH);
-                    int tsDay = tsCal.get(Calendar.DAY_OF_MONTH);
-
-                    if (tsYear == year && tsMonth == month && tsDay == day){
-                        newSignupsCount++;
-                    }
-                }
             }
 
             stockQuantity.setText("All Quantity: " + totalQuantity);
@@ -168,7 +154,7 @@ public class AdminDashActivity extends AppCompatActivity {
             List<BarEntry> entries = new ArrayList<>();
             entries.add(new BarEntry(day, totalQuantity));
             BarDataSet dataSet= new BarDataSet(entries, "Stock on " +selectedDate);
-            dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+            dataSet.setColor(Color.parseColor("#2196F3")); // Light Blue
             barChart.setData(new BarData(dataSet));
             barChart.getDescription().setEnabled(false);
             barChart.invalidate();
