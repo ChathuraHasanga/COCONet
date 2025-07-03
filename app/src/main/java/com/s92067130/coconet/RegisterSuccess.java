@@ -34,6 +34,7 @@ public class RegisterSuccess extends AppCompatActivity {
         });
     }
 
+    // Method to handle the "Continue" button click
     public void OnClickBtnContinue(View view) {
         try {
             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
