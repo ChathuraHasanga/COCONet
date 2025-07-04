@@ -7,12 +7,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
@@ -44,6 +46,11 @@ public class HomeFragment extends Fragment {
     private TextView stockLevels, pendingStock, newSuppliers, nearbyStock;
 
     private Button adminDashboardBtn;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    public String currentUserId;
+    private String currentUserDistrict;
+    private ScrollView scrollView;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -62,6 +69,8 @@ public class HomeFragment extends Fragment {
             pendingStock = root.findViewById(R.id.card2).findViewById(R.id.textPendingStock);
             newSuppliers = root.findViewById(R.id.card3).findViewById(R.id.textNewSuppliers);
             nearbyStock = root.findViewById(R.id.card4).findViewById(R.id.textNearbyStock);
+            swipeRefreshLayout = root.findViewById(R.id.swipeRefreshLayout);
+            scrollView = root.findViewById(R.id.scrollHomePage);
 
             //Find the admin dashboard button
             adminDashboardBtn = root.findViewById(R.id.adminDashboardBtn);
@@ -69,13 +78,13 @@ public class HomeFragment extends Fragment {
 
             //firebase authentication
             mAuth = FirebaseAuth.getInstance();
-            FirebaseUser user= mAuth.getCurrentUser();
+            FirebaseUser currentUser= mAuth.getCurrentUser();
 
             //If a user is logged in, load their data and dashboard info
-            if (user != null) {
-                String uid = user.getUid();
+            if (currentUser != null) {
+                currentUserId = currentUser.getUid();
 
-                mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(uid);
+                mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(currentUserId);
 
                 mDatabase.child("role").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -122,9 +131,49 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-                //load dashboard stats
-                loadDashboard(uid);
+                mDatabase.child("district").addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        currentUserDistrict = snapshot.getValue(String.class);
+                        if (currentUserDistrict != null){
+                            loadDashboard(currentUserId,currentUserDistrict);
+                        }else {
+                            Toast.makeText(getContext(), "District not set for user", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Toast.makeText(getContext(), "Failed to load district", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+//                //load dashboard stats
+//                loadDashboard(uid);
             }
+
+            //pull to refresh to reload all data
+            swipeRefreshLayout.setOnRefreshListener(() ->{
+                if (currentUserId != null && currentUserDistrict != null){
+                    loadDashboard(currentUserId, currentUserDistrict);
+                }else {
+                    swipeRefreshLayout.setRefreshing(false);
+                    Toast.makeText(getContext(), "Data not ready. Please try again later.", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            //Detect scroll to bottom and refresh
+            scrollView.getViewTreeObserver().addOnScrollChangedListener(() -> {
+                View view = scrollView.getChildAt(scrollView.getChildCount() - 1);
+                int diff = (view.getBottom() - (scrollView.getHeight() + scrollView.getScrollY()));
+
+                if (diff == 0 && currentUserId != null && currentUserDistrict != null){
+                    Toast.makeText(getContext(), "Refreshing data...", Toast.LENGTH_SHORT).show();
+
+                    //Refresh dashboard data
+                    loadDashboard(currentUserId, currentUserDistrict);
+                }
+            });
 
             final TextView textView = binding.textHome;
             homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
@@ -135,11 +184,23 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    //Auto refresh when user returns to this fragment
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (currentUserId != null && currentUserDistrict != null){
+            loadDashboard(currentUserId, currentUserDistrict);
+        }
+    }
+
     /**
      * Fetch dashboard summery data for the user and others from firebase
      * includes total stock today, pending entries, new suppliers, and nearby stock count.
      */
-    private void loadDashboard(String uid) {
+    private void loadDashboard(String uid, String district) {
+        swipeRefreshLayout.setRefreshing(true);
         try {
             DatabaseReference usersRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
                     .getReference("users");
@@ -158,7 +219,7 @@ public class HomeFragment extends Fragment {
                     try {
                         //loop through all users to analyze their stock data
                         for (DataSnapshot userSnap : snapshot.getChildren()) {
-                            String district = userSnap.child("district").getValue(String.class);
+                            String userDistrict = userSnap.child("district").getValue(String.class);
 
                             boolean hasValidStoreToday = false;
                             boolean hasAnyValidStoreBefore = false;
@@ -185,7 +246,7 @@ public class HomeFragment extends Fragment {
                                             hasValidStoreToday = true;
 
                                             //count other user's stock as nearby stock
-                                            if (!userSnap.getKey().equals(uid) && storeName != null){
+                                            if (!userSnap.getKey().equals(uid) && storeName != null && userDistrict !=null && userDistrict.equalsIgnoreCase(district)){
                                                 nearbyStockQty++;
                                                 break;
                                             }
@@ -217,18 +278,21 @@ public class HomeFragment extends Fragment {
                         nearbyStock.setText(String.valueOf(nearbyStockQty)); // Exclude self from nearby stock count
 
                     }catch (Exception e) {
-                        e.printStackTrace();
-                        Toast.makeText(getContext(), "Error processing dashboard",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error processing dashboard" + e.getMessage(),Toast.LENGTH_SHORT).show();
+                    }finally {
+                        swipeRefreshLayout.setRefreshing(false); //Hide refresh
                     }
                 }
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
                     Toast.makeText(getContext(), "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    swipeRefreshLayout.setRefreshing(false);
                 }
             });
         }catch (Exception e){
             Toast.makeText(getContext(), "Database error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 

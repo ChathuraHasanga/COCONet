@@ -1,14 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/swipeRefreshLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F1F9F1"
+    tools:context=".ui.home.HomeFragment">
+
+<ScrollView
+    android:id="@+id/scrollHomePage"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:background="#F1F9F1"
-    android:paddingBottom="80dp"
-    tools:context=".ui.home.HomeFragment">
+    android:paddingBottom="80dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -280,4 +287,4 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
 
-
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
