@@ -172,7 +172,7 @@ public class NotificationsFragment extends Fragment {
                                 Toast.makeText(getContext(), "Could not fetch address", Toast.LENGTH_SHORT).show();
                             }
                         } else {
-                            Toast.makeText(getContext(), "Location is null", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Please turn ON GPS to get location", Toast.LENGTH_SHORT).show();
                         }
                     });
         }catch (Exception e){

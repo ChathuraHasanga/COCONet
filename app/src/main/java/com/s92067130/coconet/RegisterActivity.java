@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import android.location.Address;
 import android.location.Geocoder;
@@ -125,7 +126,7 @@ public class RegisterActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View view) {
                     if (ContextCompat.checkSelfPermission(RegisterActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                        ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);;
+                        ActivityCompat.requestPermissions(RegisterActivity.this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
                     }else {
                         fetchLocation();
                     }
@@ -236,6 +237,12 @@ public class RegisterActivity extends AppCompatActivity {
                     //check password and confirm password match or not
                     if (!password.equals(confirmPassword)){
                         Toast.makeText(RegisterActivity.this, "Password and Confirm password should same", Toast.LENGTH_SHORT).show();
+                        progressBar.setVisibility(View.GONE);
+                        return;
+                    }
+
+                    if (district == null || province == null || latitude == null || longitude == null) {
+                        Toast.makeText(RegisterActivity.this, "Please GPS ON before registering", Toast.LENGTH_SHORT).show();
                         progressBar.setVisibility(View.GONE);
                         return;
                     }
@@ -376,34 +383,54 @@ public class RegisterActivity extends AppCompatActivity {
     private void fetchLocation(){
         try {
             FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, location -> {
-                if (location != null) {
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 100);
+                return;
+            }
 
-                    latitude = location.getLatitude();
-                    longitude = location.getLongitude();
+            com.google.android.gms.location.LocationRequest locationRequest = com.google.android.gms.location.LocationRequest.create();
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            locationRequest.setInterval(1000); //every 1 second
+            locationRequest.setFastestInterval(500);
+            locationRequest.setNumUpdates(1); //only once
 
-                    //convert location to address
-                    Geocoder geocoder = new Geocoder(RegisterActivity.this, Locale.getDefault());
-                    try {
-                        List<Address> addresses = geocoder.getFromLocation(latitude,longitude,1);
-                        if (addresses != null && !addresses.isEmpty()){
-                            String address = addresses.get(0).getAddressLine(0);
-                            district = addresses.get(0).getSubAdminArea();
-                            province = addresses.get(0).getAdminArea();
-
-                            locationTxt.setText(address); //set address in editText
-                        }else{
-                            locationTxt.setText("Unable to get address.");
-                        }
-                    }catch (IOException e){
-                        e.printStackTrace();
-                        locationTxt.setText("Geocoder error");
+            fusedLocationProviderClient.requestLocationUpdates(locationRequest, new com.google.android.gms.location.LocationCallback(){
+                @Override
+                public void onLocationResult(com.google.android.gms.location.LocationResult locationResult) {
+                    if (locationResult == null) {
+                        Toast.makeText(RegisterActivity.this, "Failed to get location.", Toast.LENGTH_SHORT).show();
+                        return;
                     }
 
-                }else {
-                    locationTxt.setText("Location not available");
+                    android.location.Location location = locationResult.getLastLocation();
+
+                    if (location != null) {
+                        latitude = location.getLatitude();
+                        longitude = location.getLongitude();
+
+                        //convert location to address
+                        Geocoder geocoder = new Geocoder(RegisterActivity.this, Locale.getDefault());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
+                            if (addresses != null && !addresses.isEmpty()) {
+                                String address = addresses.get(0).getAddressLine(0);
+                                district = addresses.get(0).getSubAdminArea();
+                                province = addresses.get(0).getAdminArea();
+                                locationTxt.setText(address); //set address in editText
+                            } else {
+                                locationTxt.setText("Unable to get address.");
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            locationTxt.setText("Geocoder error");
+                        }
+
+                    } else {
+                        locationTxt.setText("Location not available");
+                        Toast.makeText(RegisterActivity.this, "GPS is off. Please turn it on.", Toast.LENGTH_LONG).show();
+                    }
                 }
-            });
+            }, getMainLooper());
         }catch (Exception e){
             Toast.makeText(this, "Error fetching location: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
