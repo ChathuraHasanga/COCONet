@@ -146,6 +146,9 @@ public class StockInputActivity extends AppCompatActivity {
                     try {
                         ArrayList<Stock> latestStockPerUser = new ArrayList<>();
 
+                        long threeDaysInMillis = 3 * 24 * 60 * 60 * 1000L; // 3 days in milliseconds
+                        long currentTime = System.currentTimeMillis();
+
                         //loop through all users
                         for (DataSnapshot userSnap : snapshot.getChildren()) {
                             DataSnapshot stockSnap = userSnap.child("stock_data");
@@ -161,7 +164,11 @@ public class StockInputActivity extends AppCompatActivity {
                                 }
                             }
 
-                            if (latestStock != null) {
+//                            if (latestStock != null) {
+//                                latestStockPerUser.add(latestStock);
+//                            }
+                            // Check if the latest stock entry is within the last 3 days
+                            if (latestStock != null && (currentTime - latestStock.timestamp <= threeDaysInMillis)) {
                                 latestStockPerUser.add(latestStock);
                             }
                         }
