@@ -186,7 +186,7 @@ public class StockInputActivity extends AppCompatActivity {
 
                             dataView.setText("Date : " + stock.date);
                             quantityView.setText("Quantity : " + stock.quantity);
-                            locationView.setText("Stock : " + stock.storeName);
+                            locationView.setText("Store : " + stock.storeName);
 
                             stockListContainer.addView(stockView);
                         }
