@@ -3,6 +3,7 @@ package com.s92067130.coconet.ui.notifications;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.icu.util.Calendar;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -107,19 +108,22 @@ public class NotificationsFragment extends Fragment {
             });
 
             resetBtn.setOnClickListener(v -> {
+                long todayStartMillis = getStartOfDayMillis();
+
                 userRef.child("stock_data").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         for (DataSnapshot stockItem : snapshot.getChildren()) {
-                            String storeName = stockItem.child("storeName").getValue(String.class);
 
-                            // If storeName exists, remove only that field
-                            if (storeName != null) {
+                            Long timestamp = stockItem.child("timestamp").getValue(Long.class);
+
+                            // If storeName exists, remove only that field if the record is added today
+                            if (timestamp != null && timestamp >= todayStartMillis) {
                                 stockItem.getRef().child("storeName").removeValue();
                             }
                         }
 
-                        Toast.makeText(getContext(), "Reset successful!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Today's store data reset successfully!", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
@@ -196,6 +200,15 @@ public class NotificationsFragment extends Fragment {
         return null;
     }
 
+    // Utility function to get today's start time in millis
+    private long getStartOfDayMillis() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTimeInMillis();
+    }
     /**
      *Loads user profile data from firebase
      */

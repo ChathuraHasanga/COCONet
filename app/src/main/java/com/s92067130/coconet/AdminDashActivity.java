@@ -1,6 +1,7 @@
 package com.s92067130.coconet;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -88,6 +89,17 @@ public class AdminDashActivity extends AppCompatActivity {
             });
         }catch (Exception e){
             Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void OnClickBtnBackDash(View view) {
+        try {
+            // Navigate to MainActivity when the back arrow is clicked
+            Intent intent = new Intent(AdminDashActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }catch (Exception e){
+            Toast.makeText(this, "Error navigating back: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
     }
 

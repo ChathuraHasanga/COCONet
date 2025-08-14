@@ -76,12 +76,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Replace the current fragment with DashboardFragment when the map button is clicked.
     public void OnMapBtnClicked(View view) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.nav_host_fragment_activity_main, new DashboardFragment())
-                .addToBackStack(null)
-                .commit();
+        BottomNavigationView navView = findViewById(R.id.nav_view);
+        navView.setSelectedItemId(R.id.navigation_dashboard); // Switch to Map tab
     }
+
 }
