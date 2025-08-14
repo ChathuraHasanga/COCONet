@@ -147,7 +147,7 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                             // Only add marker if stock exists
                             if (latestStock != null && latestStock.storeName != null) {
                                 LatLng position = new LatLng(lat, lng);
-                                String infoText = "Store: " + latestStock.storeName +
+                                String infoText = "Name: " + latestStock.storeName +
                                         "\nCurrent stock: " + latestStock.quantity+
                                         "\nOn: " + latestStock.date;
 
