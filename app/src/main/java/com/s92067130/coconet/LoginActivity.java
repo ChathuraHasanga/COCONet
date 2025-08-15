@@ -174,22 +174,6 @@ public class LoginActivity extends AppCompatActivity {
                 }
             });
 
-            //toggle password visibility
-//            togglePassword.setOnClickListener(v->{
-//                try {
-//                    if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
-//                        editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-//                        togglePassword.setImageResource(R.drawable.visibility_24dp);
-//                    }else{
-//                        editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-//                        togglePassword.setImageResource(R.drawable.visibility_off_24dp);
-//                    }
-//                    editTextPassword.setSelection(editTextPassword.getText().length());
-//                }catch (Exception e){
-//                    Toast.makeText(this, "Toggle error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-//                }
-//            });
-
             //system bar inset handling.
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
