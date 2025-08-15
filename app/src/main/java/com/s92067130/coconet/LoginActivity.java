@@ -79,7 +79,6 @@ public class LoginActivity extends AppCompatActivity {
             buttonLogin = findViewById(R.id.loginbtn);
             progressBar = findViewById(R.id.progressbar);
             textView = findViewById(R.id.registerTxt);
-            ImageView togglePassword = findViewById(R.id.togglePassword);
 
             //Set click listeners for register text.
             textView.setOnClickListener(new View.OnClickListener() {

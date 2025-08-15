@@ -118,8 +118,6 @@ public class RegisterActivity extends AppCompatActivity {
             textView = findViewById(R.id.loginTxt);
             locationTxt = findViewById(R.id.locationText);
             permissionBtn = findViewById(R.id.permissionbtn);
-            ImageView togglePassword = findViewById(R.id.togglePassword);
-            ImageView toggleConfirmPassword = findViewById(R.id.toggleConfirmPassword);
 
             //Request location permission or fetch location if permission already granted
             permissionBtn.setOnClickListener(new View.OnClickListener() {
@@ -273,30 +271,6 @@ public class RegisterActivity extends AppCompatActivity {
                                 }
                             });
                 }
-            });
-
-            //Toggle visibility for password fields.
-            togglePassword.setOnClickListener(v->{
-                if (editTextPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
-                    editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    togglePassword.setImageResource(R.drawable.visibility_24dp);
-                }else{
-                    editTextPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    togglePassword.setImageResource(R.drawable.visibility_off_24dp);
-                }
-                editTextPassword.setSelection(editTextPassword.getText().length());
-            });
-
-            //Toggle visibility for confirm password fields.
-            toggleConfirmPassword.setOnClickListener(v->{
-                if (editTextConfirmPassword.getInputType() == (InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)){
-                    editTextConfirmPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-                    toggleConfirmPassword.setImageResource(R.drawable.visibility_24dp);
-                }else{
-                    editTextConfirmPassword.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-                    toggleConfirmPassword.setImageResource(R.drawable.visibility_off_24dp);
-                }
-                editTextConfirmPassword.setSelection(editTextConfirmPassword.getText().length());
             });
 
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
