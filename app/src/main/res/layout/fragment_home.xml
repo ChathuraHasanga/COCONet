@@ -62,7 +62,7 @@
 
         <GridLayout
             android:id="@+id/dashboard_grid"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="8dp"
             android:layout_marginStart="4dp"
@@ -84,6 +84,8 @@
                 android:layout_height="160dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
+                style="@style/PrimaryButton"
+                android:backgroundTint="#0037B6"
                 android:background="@drawable/card_bg_ripple"
                 android:clickable="true"
                 android:focusable="true">
@@ -116,6 +118,8 @@
                 android:layout_height="160dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
+                style="@style/PrimaryButton"
+                android:backgroundTint="#FF9800"
                 android:background="@drawable/card_bg_ripple"
                 android:clickable="true"
                 android:focusable="true">
@@ -148,6 +152,8 @@
                 android:layout_height="160dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
+                style="@style/PrimaryButton"
+                android:backgroundTint="#4CAF50"
                 android:background="@drawable/card_bg_ripple"
                 android:clickable="true"
                 android:focusable="true">
@@ -180,6 +186,8 @@
                 android:layout_height="160dp"
                 android:layout_columnWeight="1"
                 android:layout_margin="8dp"
+                style="@style/PrimaryButton"
+                android:backgroundTint="#9C27B0"
                 android:background="@drawable/card_bg_ripple"
                 android:clickable="true"
                 android:focusable="true">
