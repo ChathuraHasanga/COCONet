@@ -47,6 +47,6 @@ public class FirstPage extends AppCompatActivity {
             startActivity(intent);
 
             finish();  //user can't go back to this page
-        }, 3000); //3 seconds delay
+        }, 2000); //2 seconds delay
     }
 }
