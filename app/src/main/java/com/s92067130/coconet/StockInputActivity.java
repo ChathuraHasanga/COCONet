@@ -204,7 +204,7 @@ public class StockInputActivity extends AppCompatActivity {
         }catch (Exception e){
             Toast.makeText(this, "Error loading stock data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-}
+    }
 
     // Navigate to MainActivity when back is pressed
     public void OnClickBtnBack(View view) {

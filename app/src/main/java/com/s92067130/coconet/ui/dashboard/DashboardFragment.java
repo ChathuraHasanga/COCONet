@@ -125,7 +125,6 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                         String name = userSnapshot.child("name").getValue(String.class);
-                        String locationName = userSnapshot.child("locationTxt").getValue(String.class);
                         Double lat = userSnapshot.child("latitude").getValue(Double.class);
                         Double lng = userSnapshot.child("longitude").getValue(Double.class);
 
@@ -151,10 +150,14 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                                         "\nCurrent stock: " + latestStock.quantity+
                                         "\nOn: " + latestStock.date;
 
-                                myMap.addMarker(new MarkerOptions()
+                                Marker marker = myMap.addMarker(new MarkerOptions()
                                         .position(position)
                                         .title(name)
                                         .snippet(infoText));
+
+                                if (marker != null){
+                                    marker.setTag(userSnapshot.getKey()); // Set user ID as tag for contact activity
+                                }
                             }
                         }
                     }
@@ -194,26 +197,36 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
                 @Override
                 public View getInfoContents(@NonNull com.google.android.gms.maps.model.Marker marker) {
 
-                    // Inflate custom layout for info window
-                    View view = LayoutInflater.from(getContext()).inflate(R.layout.custom_mapinfo, null);
+                    if (marker.getTag() != null) {
+                        // Inflate custom layout for info window
+                        View view = LayoutInflater.from(getContext()).inflate(R.layout.custom_mapinfo, null);
 
-                    //TextView title = view.findViewById(R.id.infoTitle);
-                    TextView snippet = view.findViewById(R.id.infoSnippet);
+                        //TextView title = view.findViewById(R.id.infoTitle);
+                        TextView snippet = view.findViewById(R.id.infoSnippet);
 
-                    //title.setText(marker.getTitle());
-                    snippet.setText(marker.getSnippet());
+                        //title.setText(marker.getTitle());
+                        snippet.setText(marker.getSnippet());
 
-                    return view;
+                        return view;
+                    }else {
+                        return null;
+                    }
+
                 }
             });
 
             // Set a click listener for info windows
             myMap.setOnInfoWindowClickListener(marker -> {
-                try {
-                    Intent intent = new Intent(requireContext(), ContactActivity.class);
-                    startActivity(intent);
-                }catch (Exception e){
-                    Toast.makeText(getContext(), "Error opening contact activity", Toast.LENGTH_SHORT).show();
+                Object tag = marker.getTag();
+                if (tag != null) {
+                    try {
+                        String userId = tag.toString();
+                        Intent intent = new Intent(requireContext(), ContactActivity.class);
+                        intent.putExtra("userId", userId);
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "Error opening contact activity", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
 

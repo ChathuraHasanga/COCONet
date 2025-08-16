@@ -70,50 +70,26 @@
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="6dp"
+            android:clickable="true"
+            android:focusable="true"
             android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp">
+            android:layout_marginRight="8dp"
+            android:foreground="?attr/selectableItemBackgroundBorderless">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="16dp"
-                android:background="#A6BEF4">
+                android:background="@drawable/card_bg2">
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:id="@+id/infoContactSnippet"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Name : Saman Farms"
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="#000000" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Location : Kuliyapitiya"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="4dp"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Quantity : 150"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="4dp"/>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Price : Rs. 70/nut"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="4dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -128,12 +104,15 @@
                         android:layout_height="wrap_content" />
 
                     <Button
+                        android:id="@+id/contactBtn"
+                        style="@style/PrimaryButton"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:backgroundTint="#447EFF"
+                        android:backgroundTint="#0037B6"
                         android:text="View Map"
                         android:textColor="#FFFFFF"
+                        android:onClick="OnClickBtnBackMap"
                         android:textSize="20dp"
                         android:textStyle="bold" />
                 </LinearLayout>
