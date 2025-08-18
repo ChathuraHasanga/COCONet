@@ -1,4 +1,4 @@
-package com.s92067130.coconet.ui.dashboard;
+package com.s92067130.coconet.ui.map;
 
 import android.content.Intent;
 import android.location.Address;
@@ -35,13 +35,11 @@ import com.google.firebase.database.ValueEventListener;
 import com.s92067130.coconet.R;
 import com.s92067130.coconet.databinding.FragmentDashboardBinding;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 import java.util.Locale;
 
 //DashboardFragment displays a map and user stock data as markers from firebase.
-public class DashboardFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private FragmentDashboardBinding binding;
     private GoogleMap myMap;    // initialize GoogleMap instance
@@ -49,8 +47,8 @@ public class DashboardFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         try {
-            DashboardViewModel dashboardViewModel =
-                    new ViewModelProvider(this).get(DashboardViewModel.class);
+            MapViewModel dashboardViewModel =
+                    new ViewModelProvider(this).get(MapViewModel.class);
 
             binding = FragmentDashboardBinding.inflate(inflater, container, false);
             View root = binding.getRoot();

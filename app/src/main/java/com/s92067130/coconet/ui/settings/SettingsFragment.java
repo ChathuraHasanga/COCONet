@@ -1,4 +1,4 @@
-package com.s92067130.coconet.ui.notifications;
+package com.s92067130.coconet.ui.settings;
 
 import android.Manifest;
 import android.content.Intent;
@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -39,7 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 
 //Fragment to manage and update user profile including Location, contact, and reset options.
-public class NotificationsFragment extends Fragment {
+public class SettingsFragment extends Fragment {
 
     private EditText nameInput, emailInput, phoneInput, locationInput;
     private Button updateBtn, logoutBtn, resetBtn, permissionBtn;

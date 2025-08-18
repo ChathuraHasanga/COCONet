@@ -1,11 +1,9 @@
 package com.s92067130.coconet;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -15,13 +13,10 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.s92067130.coconet.databinding.ActivityMainBinding;
-import com.s92067130.coconet.ui.dashboard.DashboardFragment;
 
 //MainActivity - Hosts the main navigation UI of the application.
 public class MainActivity extends AppCompatActivity {
