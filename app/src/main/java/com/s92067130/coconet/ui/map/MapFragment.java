@@ -38,12 +38,29 @@ import com.s92067130.coconet.databinding.FragmentMapBinding;
 import java.util.List;
 import java.util.Locale;
 
-//DashboardFragment displays a map and user stock data as markers from firebase.
+/**
+ * MapFragment displays a Google Map with markers for users' stock data.
+ * <p>
+ * Features:
+ * - Displays a map centered on Sri Lanka.
+ * - Allows searching for a location by name.
+ * - Fetches and displays user stock data from Firebase as map markers.
+ * - Opens a ContactActivity when a marker’s info window is clicked.
+ */
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private FragmentMapBinding binding;
     private GoogleMap myMap;    // initialize GoogleMap instance
 
+    /**
+     * Called when the fragment creates its view.
+     * Initializes UI bindings, sets up map fragment, and handles location search input.
+     *
+     * @param inflater           LayoutInflater object to inflate fragment views.
+     * @param container          Parent container in which the fragment UI is placed.
+     * @param savedInstanceState Previously saved state for restoring fragment state.
+     * @return Root view of the fragment layout, or null if initialization fails.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         try {
@@ -88,16 +105,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
-    // Finds and zooms to a location by name using Geocoder.
+    /**
+     * Finds a location by name using Geocoder and places a marker on the map.
+     * Also zooms into the found location.
+     *
+     * @param locationName Name of the location entered by user.
+     */
     private void findLocationByName(String locationName) {
         try {
+            // Convert location name into coordinates
             Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
             List<Address> addresses = geocoder.getFromLocationName(locationName,1);
+
             if (addresses != null && !addresses.isEmpty()){
                 Address address = addresses.get(0);
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                // Add marker and zoom
+                // Add marker and zoom in to the location
                 myMap.addMarker(new MarkerOptions().position(latLng).title(locationName));
                 myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
 
@@ -111,16 +135,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     /**
-     * Loads user Locations and latest stock data from firebase and adds them as markers.
+     * Loads user locations and their latest stock data from Firebase.
+     * Each user with valid latitude, longitude, and stock data will be shown as a marker.
+     * Clicking on the info window will open ContactActivity for that user.
      */
     private void loadUserLocationsFromDatabase() {
         try {
+            // Reference to Firebase users node
             DatabaseReference databaseRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
                     .getReference("users");
 
             databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    // Iterate through all users
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                         String name = userSnapshot.child("name").getValue(String.class);
                         Double lat = userSnapshot.child("latitude").getValue(Double.class);
@@ -172,7 +200,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     /**
-     * Called when the map is ready to be used. Initializes map UI and loads markers.
+     * Called when Google Map is ready to use.
+     * Configures UI settings, sets default location, loads user stock markers,
+     * and handles marker info window click events.
+     *
+     * @param googleMap Instance of GoogleMap that is ready to be manipulated.
      */
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
@@ -184,12 +216,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             myMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sriLankaCenter, 7.5f));
             myMap.getUiSettings().setZoomControlsEnabled(true);
 
-            //set custom info
+            // Custom info window layout for markers
             myMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
                 @Nullable
                 @Override
                 public View getInfoWindow(@NonNull com.google.android.gms.maps.model.Marker marker) {
-                    return null;
+                    return null;    // Use default frame
                 }
 
                 @Override
@@ -236,7 +268,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     }
 
     /**
-     * clean up view binding when view is destroyed.
+     * Cleans up binding reference when the view is destroyed to prevent memory leaks.
      */
     @Override
     public void onDestroyView() {

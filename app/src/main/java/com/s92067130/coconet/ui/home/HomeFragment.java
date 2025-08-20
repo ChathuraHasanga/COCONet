@@ -46,8 +46,15 @@ public class HomeFragment extends Fragment {
     public String currentUserId;
     private String currentUserDistrict;
 
-
-
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     * Initializes Firebase authentication, fetches user details, and sets up UI components.
+     *
+     * @param inflater  LayoutInflater object to inflate views in the fragment.
+     * @param container Parent view to attach the fragment UI.
+     * @param savedInstanceState Bundle with saved state data.
+     * @return The root View of the fragment UI, or null if initialization fails.
+     */
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
@@ -196,8 +203,17 @@ public class HomeFragment extends Fragment {
     }
 
     /**
-     * Fetch dashboard summery data for the user and others from firebase
-     * includes total stock today, pending entries, new suppliers, and nearby stock count.
+     * Loads and processes the dashboard summary data for the logged-in user and others
+     * from Firebase Realtime Database.
+     *
+     * This includes:
+     * - Total stock added today.
+     * - Pending stock entries (users with incomplete stock data).
+     * - New suppliers who added stock for the first time today.
+     * - Nearby stock entries (other users in the same district).
+     *
+     * @param uid      The unique user ID of the currently logged-in user.
+     * @param district The district of the current user, used to filter nearby stock.
      */
     private void loadDashboard(String uid, String district) {
         swipeRefreshLayout.setRefreshing(true);
@@ -296,7 +312,11 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    //Gets the start of the current day in milliseconds.
+    /**
+     * Gets the timestamp for the start of the current day in milliseconds.
+     *
+     * @return long representing today's start time (00:00:00.000) in epoch millis.
+     */
     private long getStartOfDayMillis(){
         Calendar calender = Calendar.getInstance();
         calender.set(Calendar.HOUR_OF_DAY,0);

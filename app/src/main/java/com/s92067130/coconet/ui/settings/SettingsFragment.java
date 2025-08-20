@@ -37,19 +37,38 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-//Fragment to manage and update user profile including Location, contact, and reset options.
+/**
+ * Fragment to manage and update user profile including:
+ * - Name, email, contact, location
+ * - Reset daily stock storeName
+ * - Location permission and update
+ * - Logout functionality
+ */
 public class SettingsFragment extends Fragment {
 
     private EditText nameInput, emailInput, phoneInput, locationInput;
     private Button updateBtn, logoutBtn, resetBtn, permissionBtn;
+
+    // Firebase references
     private FirebaseAuth auth;
     private FirebaseUser user;
     private DatabaseReference userRef;
+
+    // Location services
     private FusedLocationProviderClient locationClient;
-    private FragmentSettingsBinding binding;
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
-    //called to initialize the fragment view and setup firebase references and UI.
+    // UI Elements
+    private FragmentSettingsBinding binding;
+
+    /**
+     * Called to initialize the fragment view and setup Firebase, UI elements, and listeners.
+     *
+     * @param inflater  LayoutInflater to inflate the fragment layout
+     * @param container Parent view that the fragment's UI should attach to
+     * @param savedInstanceState Previously saved state of the fragment
+     * @return The root view of the fragment
+     */
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -58,11 +77,12 @@ public class SettingsFragment extends Fragment {
         View root = binding.getRoot();
 
         try {
-            // Firebase
+            // Initialize Firebase authentication and user reference
             auth = FirebaseAuth.getInstance();
             user = auth.getCurrentUser();
 
             if (user == null) {
+                // If no user is logged in, redirect to LoginActivity
                 startActivity(new Intent(getActivity(), LoginActivity.class));
                 requireActivity().finish();
                 return root;
@@ -72,7 +92,7 @@ public class SettingsFragment extends Fragment {
             userRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
                     .getReference("users").child(uid);
 
-            // Location client
+            // Setup location services client
             locationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
 
             // View bindings
@@ -86,7 +106,7 @@ public class SettingsFragment extends Fragment {
             resetBtn = root.findViewById(R.id.resetBtn);
             permissionBtn = root.findViewById(R.id.permissionBtn); // "Give Permission"
 
-            // Handle permission result
+            // Handle location permission request result
             requestPermissionLauncher =
                     registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                         if (isGranted) {
@@ -96,16 +116,17 @@ public class SettingsFragment extends Fragment {
                         }
                     });
 
-            // Button listeners
+            // Update button click → save profile updates
             updateBtn.setOnClickListener(v -> updateUserData());
 
-            // Logout the user
+            // Logout button click → sign out user and redirect to LoginActivity
             logoutBtn.setOnClickListener(v -> {
                 auth.signOut();
                 startActivity(new Intent(getActivity(), LoginActivity.class));
                 requireActivity().finish();
             });
 
+            // Reset button click → remove today's storeName values
             resetBtn.setOnClickListener(v -> {
                 long todayStartMillis = getStartOfDayMillis();
 
@@ -132,10 +153,13 @@ public class SettingsFragment extends Fragment {
                 });
             });
 
+            // Permission button click → request location access
             permissionBtn.setOnClickListener(v -> requestLocationPermission());
 
+            // Auto cleanup old store names
             autoRemoveExpiredStoreNames();
-            // Load data
+
+            // Load user data from Firebase
             loadUserData();
         }catch (Exception e){
             Toast.makeText(getContext(), "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -143,7 +167,9 @@ public class SettingsFragment extends Fragment {
         return root;
     }
 
-    //Request location permission if not already granted.
+    /**
+     * Request fine location permission if not already granted.
+     */
     private void requestLocationPermission() {
         try {
             if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
@@ -157,7 +183,9 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    //Retrieves the current location and updates the address in Firebase
+    /**
+     * Retrieves the current location and updates Firebase with the resolved address.
+     */
     private void getLocationAndUpdateAddress() {
         try {
             locationClient.getLastLocation()
@@ -183,7 +211,12 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    //converts location coordinates to a human-readable address using Geocoder.
+    /**
+     * Converts latitude/longitude into a human-readable address.
+     *
+     * @param location The location object containing latitude and longitude
+     * @return Address string if resolved, otherwise null
+     */
     private String getAddressFromLocation(Location location) {
         Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
         try {
@@ -199,7 +232,11 @@ public class SettingsFragment extends Fragment {
         return null;
     }
 
-    // Utility function to get today's start time in millis
+    /**
+     * Utility function to return today's start time in milliseconds.
+     *
+     * @return Milliseconds representing today's 00:00 time
+     */
     private long getStartOfDayMillis() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -208,8 +245,9 @@ public class SettingsFragment extends Fragment {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
+
     /**
-     *Loads user profile data from firebase
+     * Load user profile data from Firebase and populate input fields.
      */
     private void loadUserData() {
         try {
@@ -232,7 +270,10 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    // Updates the user's profile in Firebase
+    /**
+     * Update user profile data in Firebase Realtime Database.
+     * Fields updated: name, email, contactNumber, locationTxt, lastUpdated.
+     */
     private void updateUserData() {
         try {
             String name = nameInput.getText().toString().trim();
@@ -261,7 +302,9 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    //Removes expired "storeName" fields after 3 days from stock data.
+    /**
+     * Automatically removes "storeName" entries older than 3 days.
+     */
     private void autoRemoveExpiredStoreNames(){
         try {
             long threeDaysMillis = 3L * 24 * 60 * 60 * 1000;
@@ -288,7 +331,9 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    //prevent memory leaks.
+    /**
+     * Prevent memory leaks by nullifying binding reference when view is destroyed.
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
