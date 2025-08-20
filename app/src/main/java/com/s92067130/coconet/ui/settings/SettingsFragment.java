@@ -29,7 +29,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 import com.s92067130.coconet.LoginActivity;
 import com.s92067130.coconet.R;
-import com.s92067130.coconet.databinding.FragmentNotificationsBinding;
+import com.s92067130.coconet.databinding.FragmentSettingsBinding;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -46,7 +46,7 @@ public class SettingsFragment extends Fragment {
     private FirebaseUser user;
     private DatabaseReference userRef;
     private FusedLocationProviderClient locationClient;
-    private FragmentNotificationsBinding binding;
+    private FragmentSettingsBinding binding;
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
     //called to initialize the fragment view and setup firebase references and UI.
@@ -54,7 +54,7 @@ public class SettingsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
-        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+        binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         try {

@@ -31,17 +31,21 @@ import java.util.Calendar;
 // Home fragment displays the welcome message and dashboard summery data.
 public class HomeFragment extends Fragment {
 
+    // Firebase authentication & DB reference
     FirebaseAuth mAuth;
-    TextView welcomeText;
     DatabaseReference mDatabase;
-    private FragmentHomeBinding binding;
-    private TextView stockLevels, pendingStock, newSuppliers, nearbyStock;
 
+    // View Binding & UI Elements
+    private FragmentHomeBinding binding;
+    private TextView welcomeText, stockLevels, pendingStock, newSuppliers, nearbyStock;
     private Button adminDashboardBtn;
     private SwipeRefreshLayout swipeRefreshLayout;
+    private ScrollView scrollView;
+
+    // Current logged-in user details
     public String currentUserId;
     private String currentUserDistrict;
-    private ScrollView scrollView;
+
 
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -76,8 +80,10 @@ public class HomeFragment extends Fragment {
             if (currentUser != null) {
                 currentUserId = currentUser.getUid();
 
+                // Reference to logged-in user's node in "users"
                 mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(currentUserId);
 
+                // Check if user is admin -> show Admin Dashboard button
                 mDatabase.child("role").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -95,12 +101,13 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
+                // Navigate to Admin Dashboard if button clicked
                 adminDashboardBtn.setOnClickListener(View -> {
                     Intent intent = new Intent(getActivity(), AdminDashActivity.class);
                     startActivity(intent);
                 });
 
-                //fetch current user's name from database
+                //fetch current user's name from database for welcome message
                 mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -123,11 +130,13 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
+                // Fetch user district (needed for filtering nearby stock)
                 mDatabase.child("district").addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         currentUserDistrict = snapshot.getValue(String.class);
                         if (currentUserDistrict != null){
+                            // Load dashboard only after district is known
                             loadDashboard(currentUserId,currentUserDistrict);
                         }else {
                             Toast.makeText(getContext(), "District not set for user", Toast.LENGTH_SHORT).show();
@@ -140,8 +149,6 @@ public class HomeFragment extends Fragment {
                     }
                 });
 
-//                //load dashboard stats
-//                loadDashboard(uid);
             }
 
             //pull to refresh to reload all data
@@ -182,6 +189,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        // Auto-refresh when returning to fragment
         if (currentUserId != null && currentUserDistrict != null){
             loadDashboard(currentUserId, currentUserDistrict);
         }
@@ -237,10 +245,10 @@ public class HomeFragment extends Fragment {
                                             totalStockToday += qty;
                                             hasValidStoreToday = true;
 
-                                            //count other user's stock as nearby stock
+                                            // Count as "nearby stock" if another user in same district
                                             if (!userSnap.getKey().equals(uid) && storeName != null && userDistrict !=null && userDistrict.equalsIgnoreCase(district)){
                                                 nearbyStockQty++;
-                                                break;
+                                                break;   // avoid double-counting same user
                                             }
                                         }
                                         else {
@@ -301,6 +309,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        // Avoid memory leaks from ViewBinding
         binding = null;
     }
 }

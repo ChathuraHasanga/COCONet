@@ -33,7 +33,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.s92067130.coconet.R;
-import com.s92067130.coconet.databinding.FragmentDashboardBinding;
+import com.s92067130.coconet.databinding.FragmentMapBinding;
 
 import java.util.List;
 import java.util.Locale;
@@ -41,7 +41,7 @@ import java.util.Locale;
 //DashboardFragment displays a map and user stock data as markers from firebase.
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
-    private FragmentDashboardBinding binding;
+    private FragmentMapBinding binding;
     private GoogleMap myMap;    // initialize GoogleMap instance
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -50,7 +50,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             MapViewModel dashboardViewModel =
                     new ViewModelProvider(this).get(MapViewModel.class);
 
-            binding = FragmentDashboardBinding.inflate(inflater, container, false);
+            binding = FragmentMapBinding.inflate(inflater, container, false);
             View root = binding.getRoot();
 
             //set dashboard text
