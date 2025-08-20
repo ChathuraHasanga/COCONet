@@ -50,6 +50,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * RegisterActivity handles user registration, location fetching, and saving user data to Firebase.
+ * It also sends a QR-code login email to the user after registration.
+ */
 public class RegisterActivity extends AppCompatActivity {
 
     // Declare variables for views and Firebase
@@ -62,15 +66,20 @@ public class RegisterActivity extends AppCompatActivity {
 
     EditText locationTxt;
     Button permissionBtn;
+
+    // Location and user info
     String district;
     String province;
     String role = "user"; //default role for new users
     String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-
     private Double latitude = null;
     private Double longitude = null;
 
-    //Redirect to MainActivity if already signed in
+    /**
+     * Redirect to MainActivity if a user is already signed in.
+     *
+     * @return void
+     */
     @Override
     public void onStart() {
         super.onStart();
@@ -86,7 +95,13 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    //Main initialization method
+    /**
+     * Main initialization method for the activity.
+     * Initializes views, Firebase, edge-to-edge UI, and sets up click listeners.
+     *
+     * @param savedInstanceState Bundle containing saved state. Can be null.
+     * @return void
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -283,7 +298,14 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    //Send login QR code via email to user
+    /**
+     * Sends an email containing a QR code with login token to the user's email.
+     *
+     * @param name User's full name
+     * @param email User's email address
+     * @param loginToken Unique login token
+     * @return void
+     */
     private void sendEmailWithQRCode(String name, String email, String loginToken) {
         new Thread(() -> {
             try{
@@ -328,7 +350,23 @@ public class RegisterActivity extends AppCompatActivity {
         }).start();
     }
 
-    //Method to save user details to Firebase realtime database
+    /**
+     * Saves user details to Firebase Realtime Database and sends QR code via email.
+     *
+     * @param userId User's UID from Firebase Authentication
+     * @param name User's full name
+     * @param email User's email
+     * @param contactNumber User's phone number
+     * @param locationTxt Address/location of the user
+     * @param password User's password
+     * @param latitude GPS latitude
+     * @param longitude GPS longitude
+     * @param district User's district
+     * @param province User's province
+     * @param date Registration date
+     * @param role User role (default "user")
+     * @return void
+     */
     private void saveUserDetailsToDatabase(String userId, String name, String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district, String province, String date, String role){
 
         try {
@@ -353,7 +391,11 @@ public class RegisterActivity extends AppCompatActivity {
         }
     }
 
-    //fetch and display user location
+    /**
+     * Fetch user's current GPS location and convert it to an address.
+     *
+     * @return void
+     */
     private void fetchLocation(){
         try {
             FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -382,7 +424,7 @@ public class RegisterActivity extends AppCompatActivity {
                         latitude = location.getLatitude();
                         longitude = location.getLongitude();
 
-                        //convert location to address
+                        // Convert GPS to human-readable address
                         Geocoder geocoder = new Geocoder(RegisterActivity.this, Locale.getDefault());
                         try {
                             List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
@@ -425,6 +467,9 @@ public class RegisterActivity extends AppCompatActivity {
         public String date;
         public String role;
 
+        /**
+         * User model class representing all the fields stored in Firebase Realtime Database.
+         */
         public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district, String province, String date, String role){
             this.name = name;
             this.contactNumber = contactNumber;

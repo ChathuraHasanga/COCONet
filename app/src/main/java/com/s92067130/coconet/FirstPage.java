@@ -12,10 +12,21 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-//This is initial landing page of the app.
+/**
+ * FirstPage is the initial landing screen of the app.
+ * It displays a splash page for a short duration before navigating to the LoginActivity.
+ */
 public class FirstPage extends AppCompatActivity {
 
-    //oncreate- lifecycle method called when the activity is first created.
+    /**
+     * Called when the activity is first created.
+     * Initializes the UI, sets fullscreen, applies edge-to-edge layout,
+     * and schedules a delayed transition to LoginActivity.
+     *
+     * @param savedInstanceState A Bundle object containing the activity's previously saved state.
+     *                           Can be null if the activity is newly created.
+     * @return void (does not return any value)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -41,8 +52,12 @@ public class FirstPage extends AppCompatActivity {
             return insets;
         });
 
-        //3 seconds late to load the login page
+        /*
+         * Schedule a delayed task using Handler to navigate to LoginActivity
+         * after a short splash screen duration (2 seconds)
+         */
         new Handler(Looper.getMainLooper()).postDelayed(()-> {
+            // Create an intent to start LoginActivity
             Intent intent = new Intent(FirstPage.this, LoginActivity.class);
             startActivity(intent);
 

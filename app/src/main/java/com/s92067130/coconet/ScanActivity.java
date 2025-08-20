@@ -28,14 +28,31 @@ import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
+/**
+ * ScanActivity handles QR code scanning for user login.
+ * Users can scan their QR code to automatically login using Firebase credentials.
+ */
 public class ScanActivity extends AppCompatActivity {
 
+    // Firebase authentication and database references
     DatabaseReference mDatabase;
     FirebaseAuth mAuth;
+
+    // Barcode scanner view
     private DecoratedBarcodeView barcodeView;
+
+    // Flag to prevent multiple scans
     private boolean scanned = false;
+
+    // Request code for camera permission
     private static final int CAMERA_PERMISSION_REQUEST = 100;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes the camera, barcode scanner, Firebase, and UI layout.
+     *
+     * @param savedInstanceState Bundle containing previously saved state (can be null)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -61,14 +78,14 @@ public class ScanActivity extends AppCompatActivity {
             mAuth = FirebaseAuth.getInstance();
             mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users");
 
-            //setup barcode scanner
+            // Initialize barcode scanner view
             barcodeView = findViewById(R.id.previewCamera);
             if (barcodeView != null){
                 barcodeView.getStatusView().setVisibility(View.GONE);
                 barcodeView.decodeContinuous(callback);
             }
 
-            // Request camera permission first
+            // Request camera permission if not granted
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, CAMERA_PERMISSION_REQUEST);
             } else {
@@ -80,7 +97,7 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     /**
-     * start camera and barcode scanner
+     * Starts the camera and barcode scanner.
      */
     private void startScanner() {
         try {
@@ -94,7 +111,8 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     /**
-     * callback triggered when a barcode is detected.
+     * Barcode callback triggered when a barcode is detected.
+     * Validates scanned token and logs in the user using Firebase authentication.
      */
     private final BarcodeCallback callback= new BarcodeCallback() {
         public void barcodeResult(BarcodeResult result) {
@@ -114,7 +132,7 @@ public class ScanActivity extends AppCompatActivity {
                                     String email = snapshot.child("email").getValue(String.class);
                                     String password = snapshot.child("password").getValue(String.class);
 
-                                    //sign in user with email and password
+                                    // Sign in user if credentials are found
                                     if (email != null && password != null) {
                                         mAuth.signInWithEmailAndPassword(email, password)
                                                 .addOnCompleteListener(authTask -> {
@@ -158,6 +176,9 @@ public class ScanActivity extends AppCompatActivity {
         }
 };
 
+    /**
+     * Resumes the barcode scanner when activity resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();
@@ -170,6 +191,9 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Pauses the barcode scanner when activity is paused.
+     */
     @Override
     protected void onPause() {
         super.onPause();
@@ -182,7 +206,13 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
-    // Handle camera permission result
+    /**
+     * Handles camera permission request result.
+     *
+     * @param requestCode  The request code passed in requestPermissions()
+     * @param permissions  The requested permissions
+     * @param grantResults The grant results for the corresponding permissions
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -200,7 +230,11 @@ public class ScanActivity extends AppCompatActivity {
         }
     }
 
-    //Back button click handler
+    /**
+     * Handles the back button click to navigate to LoginActivity.
+     *
+     * @param view The View object representing the back button that was clicked.
+     */
     public void onClickBtnBack(View view) {
         try {
             // Navigate to LoginPage when the back arrow is clicked

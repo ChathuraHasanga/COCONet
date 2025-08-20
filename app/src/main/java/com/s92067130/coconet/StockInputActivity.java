@@ -36,15 +36,30 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 
+/**
+ * StockInputActivity handles stock entry submission and displays the latest stock entries
+ * from all users (within last 3 days).
+ *
+ * Users can enter store name and quantity, which are stored under Firebase Realtime Database
+ * under each user's UID.
+ */
 public class StockInputActivity extends AppCompatActivity {
 
     private EditText editTextStoreName, editTextQuantity;
     private Button submitButton;
 
+    // Firebase authentication and database references
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
+
     private LinearLayout stockListContainer;
 
+    /**
+     * Called when the activity is first created.
+     * Initializes UI, Firebase, and loads existing stock entries.
+     *
+     * @param savedInstanceState Bundle containing saved activity state (can be null)
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -66,11 +81,11 @@ public class StockInputActivity extends AppCompatActivity {
                 return insets;
             });
 
-            //firebase setup
+            // Initialize Firebase authentication and database reference
             mAuth = FirebaseAuth.getInstance();
             databaseReference = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users");
 
-            //ui elements
+            // Initialize UI elements
             editTextStoreName = findViewById(R.id.editTextStoreName);
             editTextQuantity = findViewById(R.id.editTextQuantity);
             submitButton = findViewById(R.id.buttonSubmit);
@@ -87,12 +102,19 @@ public class StockInputActivity extends AppCompatActivity {
         }
     }
 
-    //Handle stock submission
+    /**
+     * Handles the stock submission process.
+     * Validates input fields, saves stock to Firebase under the current user's UID,
+     * and refreshes the displayed stock list.
+     *
+     * @param view The view that triggered this click event (submit button)
+     */
     public void onClickSubmit(View view){
         try {
             String storeName = editTextStoreName.getText().toString().trim();
             String quantityStr = editTextQuantity.getText().toString().trim();
 
+            // Validate input fields
             if (TextUtils.isEmpty(storeName) || TextUtils.isEmpty(quantityStr)){
                 Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
                 return;
@@ -106,6 +128,7 @@ public class StockInputActivity extends AppCompatActivity {
                 return;
             }
 
+            // Ensure user is logged in
             FirebaseUser currentUser = mAuth.getCurrentUser();
             if (currentUser == null) {
                 Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
@@ -122,8 +145,10 @@ public class StockInputActivity extends AppCompatActivity {
             databaseReference.child(userId).child("stock_data").push().setValue(stock)
                     .addOnCompleteListener(task -> {
                         Toast.makeText(this, "Stock submitted successfully", Toast.LENGTH_SHORT).show();
+                        // Clear input fields
                         editTextStoreName.setText("");
                         editTextQuantity.setText("");
+                        // Refresh stock list
                         loadAllUsersLatestStockEntries(); // Refresh the stock list after submission
                     })
                     .addOnFailureListener(e -> {
@@ -135,7 +160,10 @@ public class StockInputActivity extends AppCompatActivity {
 
     }
 
-    //Load latest stock from each user
+    /**
+     * Loads the latest stock entry from each user (within the last 3 days)
+     * and displays them in the LinearLayout container.
+     */
     private void loadAllUsersLatestStockEntries() {
         try {
             stockListContainer.removeAllViews(); // Clear old entries
@@ -164,9 +192,6 @@ public class StockInputActivity extends AppCompatActivity {
                                 }
                             }
 
-//                            if (latestStock != null) {
-//                                latestStockPerUser.add(latestStock);
-//                            }
                             // Check if the latest stock entry is within the last 3 days
                             if (latestStock != null && (currentTime - latestStock.timestamp <= threeDaysInMillis)) {
                                 latestStockPerUser.add(latestStock);
@@ -176,6 +201,7 @@ public class StockInputActivity extends AppCompatActivity {
                         // Sort by most recent across users
                         Collections.sort(latestStockPerUser, (a, b) -> Long.compare(b.timestamp, a.timestamp));
 
+                        // Inflate and display each stock entry
                         LayoutInflater inflater = LayoutInflater.from(StockInputActivity.this);
                         for (Stock stock : latestStockPerUser) {
                             View stockView = inflater.inflate(R.layout.item_stock_entry, stockListContainer, false);
@@ -206,7 +232,11 @@ public class StockInputActivity extends AppCompatActivity {
         }
     }
 
-    // Navigate to MainActivity when back is pressed
+    /**
+     * Handles the back button click to navigate to MainActivity.
+     *
+     * @param view The view that triggered this click (back button)
+     */
     public void OnClickBtnBack(View view) {
         try {
             // Navigate to MainActivity when the back arrow is clicked
@@ -218,7 +248,9 @@ public class StockInputActivity extends AppCompatActivity {
         }
     }
 
-    //Stock model class
+    /**
+     * Model class representing a stock entry.
+     */
     public static class Stock{
         public String storeName;
         public int quantity;
@@ -229,6 +261,7 @@ public class StockInputActivity extends AppCompatActivity {
             // Needed for Firebase
         }
 
+        // Constructor to create a stock object
         public Stock (String storeName, int quantity, long timestamp, String date){
             this.storeName = storeName;
             this.quantity = quantity;

@@ -30,23 +30,35 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-// LoginActivity- Handles user authentication through firebase.
+/**
+ * LoginActivity handles user authentication via Firebase.
+ * It validates email/password input, signs in users, retrieves role,
+ * and navigates to MainActivity on successful login.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     //Declare variables for UI components.
     EditText editTextEmail, editTextPassword;
     Button buttonLogin;
-    FirebaseAuth mAuth;
     ProgressBar progressBar;
     TextView textView;
 
-    //check if a user already logged in when activity starts.
+    // Firebase authentication instance
+    FirebaseAuth mAuth;
+
+    /**
+     * Called when the activity becomes visible to the user.
+     * Checks if a user is already logged in and redirects to MainActivity.
+     *
+     * @return void
+     */
     @Override
     public void onStart() {
         super.onStart();
         try {
             FirebaseUser currentUser = mAuth.getCurrentUser();
             if(currentUser != null){
+                // User already logged in, navigate to main activity
                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
                 finish(); //prevent going back to the login screen.
@@ -56,7 +68,15 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //called when the activity is first created.
+    /**
+     * Called when the activity is first created.
+     * Initializes UI components, Firebase authentication, sets up click listeners,
+     * and handles edge-to-edge layout and system bars.
+     *
+     * @param savedInstanceState Bundle containing the activity's previously saved state.
+     *                           Can be null if the activity is newly created.
+     * @return void
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -64,6 +84,7 @@ public class LoginActivity extends AppCompatActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
 
+        // Hide action bar if present
         if (getSupportActionBar() != null){
             getSupportActionBar().hide();
         }
@@ -80,14 +101,14 @@ public class LoginActivity extends AppCompatActivity {
             progressBar = findViewById(R.id.progressbar);
             textView = findViewById(R.id.registerTxt);
 
-            //Set click listeners for register text.
+            // Register text click: navigate to registration screen
             textView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     try {
                         Intent intent = new Intent(getApplicationContext(), RegisterActivity.class);
                         startActivity(intent);
-                        finish();
+                        finish(); // Prevent going back to login
                     }catch (Exception e){
                         Toast.makeText(LoginActivity.this, "Navigation Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -133,7 +154,7 @@ public class LoginActivity extends AppCompatActivity {
                             return;
                         }
 
-                        //Firebase sign-in logic
+                        // Firebase sign-in
                         mAuth.signInWithEmailAndPassword(email, password)
                                 .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                                     @Override
@@ -142,6 +163,7 @@ public class LoginActivity extends AppCompatActivity {
                                         if (task.isSuccessful()) {
                                             FirebaseUser user = mAuth.getCurrentUser();
                                             if (user != null){
+                                                // Fetch user role from database
                                                 DatabaseReference userRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
                                                         .getReference("users").child(user.getUid());
 
@@ -184,7 +206,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //navigate to ScanActivity user interface when scan qr button is clicked
+    /**
+     * Handles navigation to ScanActivity when scan QR button is clicked.
+     *
+     * @param view The button view that was clicked.
+     * @return void
+     */
     public void onScanBtnClick(View view) {
         try {
             Intent intent = new Intent(LoginActivity.this, ScanActivity.class);
@@ -194,7 +221,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //navigate to RegisterActivity when register button is clicked
+    /**
+     * Handles navigation to RegisterActivity when register button is clicked.
+     *
+     * @param view The button view that was clicked.
+     * @return void
+     */
     public void onRegisterClick(View view) {
         try {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);

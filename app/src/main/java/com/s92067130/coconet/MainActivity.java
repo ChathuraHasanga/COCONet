@@ -18,16 +18,29 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.s92067130.coconet.databinding.ActivityMainBinding;
 
-//MainActivity - Hosts the main navigation UI of the application.
+/**
+ * MainActivity hosts the main navigation UI of the application.
+ * It manages bottom navigation between Home, Map, and Settings fragments.
+ * It also handles navigation to StockInputActivity.
+ */
 public class MainActivity extends AppCompatActivity {
 
     // Declare the binding variable for the layout
     private ActivityMainBinding binding;
 
+    // Firebase Authentication instance
     FirebaseAuth mAuth;
+
+    // Reference to Firebase Realtime Database for the current user
     DatabaseReference mDatabase;
 
-    //called when the activity is first created.
+    /**
+     * Called when the activity is first created.
+     * Initializes Firebase, sets up view binding, configures bottom navigation.
+     *
+     * @param savedInstanceState Bundle containing previously saved state. Can be null.
+     * @return void
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -44,11 +57,11 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        //firebase authentication
+        // Initialize Firebase authentication and database reference
         mAuth = FirebaseAuth.getInstance();
         mDatabase = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(mAuth.getUid());
 
-        //setup bottom navigation view.
+        // Setup BottomNavigationView to switch between fragments
         BottomNavigationView navView = findViewById(R.id.nav_view);
 
         AppBarConfiguration appBarConfiguration = new AppBarConfiguration.Builder(
@@ -60,7 +73,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     *Navigate to stockInputActivity when "Add stock" button is clicked.
+     * Handles click on "Add Stock" button.
+     * Navigates the user to StockInputActivity to input new stock details.
+     *
+     * @param view The button view that was clicked.
+     * @return void
      */
     public void onClickAddStock(View view) {
         try {
@@ -71,6 +88,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Handles click on "Map" button in custom UI.
+     * Switches the BottomNavigationView to the Map tab.
+     *
+     * @param view The button view that was clicked.
+     * @return void
+     */
     public void OnMapBtnClicked(View view) {
         BottomNavigationView navView = findViewById(R.id.nav_view);
         navView.setSelectedItemId(R.id.navigation_map); // Switch to Map tab
