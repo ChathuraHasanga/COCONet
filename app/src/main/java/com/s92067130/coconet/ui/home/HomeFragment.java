@@ -239,7 +239,7 @@ public class HomeFragment extends Fragment {
 
                             boolean hasValidStoreToday = false;
                             boolean hasAnyValidStoreBefore = false;
-                            boolean hasNullStoreName = false;
+                            boolean hasNullStoreToday = false;
                             long firstStockTimestamp = Long.MAX_VALUE;
 
                             // loop through each user's stock entries
@@ -262,7 +262,7 @@ public class HomeFragment extends Fragment {
                                             hasValidStoreToday = true;
 
                                             // Count as "nearby stock" if another user in same district
-                                            if (!userSnap.getKey().equals(uid) && storeName != null && userDistrict !=null && userDistrict.equalsIgnoreCase(district)){
+                                            if (!userSnap.getKey().equals(uid) && userDistrict !=null && userDistrict.equalsIgnoreCase(district)){
                                                 nearbyStockQty++;
                                                 break;   // avoid double-counting same user
                                             }
@@ -271,7 +271,9 @@ public class HomeFragment extends Fragment {
                                             hasAnyValidStoreBefore = true;
                                         }
                                     } else {
-                                        hasNullStoreName = true;
+                                        if (ts >= todayStartMillis) {
+                                            hasNullStoreToday = true;
+                                        }
                                     }
                                 }
                             }
@@ -281,8 +283,8 @@ public class HomeFragment extends Fragment {
                                 newUserToday++;
                             }
 
-                            // Pending = user only has null storeName stock entries
-                            if (hasNullStoreName && !hasValidStoreToday && !hasAnyValidStoreBefore) {
+                            // Pending = user only today's null storeName stock entries
+                            if (hasNullStoreToday && !hasValidStoreToday) {
                                 pendingUserCount++;
                             }
                         }
