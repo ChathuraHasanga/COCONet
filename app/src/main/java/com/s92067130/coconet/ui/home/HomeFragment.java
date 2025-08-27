@@ -2,6 +2,7 @@ package com.s92067130.coconet.ui.home;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -191,8 +192,6 @@ public class HomeFragment extends Fragment {
     }
 
     //Auto refresh when user returns to this fragment
-
-
     @Override
     public void onResume() {
         super.onResume();
@@ -249,13 +248,12 @@ public class HomeFragment extends Fragment {
                                 String storeName = stockSnap.child("storeName").getValue(String.class);
 
                                 if (ts != null && qty != null) {
-                                    if (storeName != null && !storeName.isEmpty()) {
 
                                         // Track first stock entry time.
-                                        if (ts < firstStockTimestamp) {
-                                            firstStockTimestamp = ts;
+                                        if (ts < todayStartMillis) {
+                                            hasAnyValidStoreBefore = true;
                                         }
-
+                                    if (storeName != null && !storeName.isEmpty()) {
                                         //check today's stock entries
                                         if (ts >= todayStartMillis) {
                                             totalStockToday += qty;
@@ -267,10 +265,9 @@ public class HomeFragment extends Fragment {
                                                 break;   // avoid double-counting same user
                                             }
                                         }
-                                        else {
-                                            hasAnyValidStoreBefore = true;
-                                        }
+
                                     } else {
+                                        // Pending supplier → today's stock but no store name
                                         if (ts >= todayStartMillis) {
                                             hasNullStoreToday = true;
                                         }
@@ -278,8 +275,8 @@ public class HomeFragment extends Fragment {
                                 }
                             }
 
-                            //  Count as new suppliers only if their stock is from today
-                            if (hasValidStoreToday && firstStockTimestamp >= todayStartMillis) {
+                            //  Count as new suppliers only if their stock is from today, no stock previously entered and not the logged user.
+                            if (hasValidStoreToday && !hasAnyValidStoreBefore && !userSnap.getKey().equals(uid)) {
                                 newUserToday++;
                             }
 
