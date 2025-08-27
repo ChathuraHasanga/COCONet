@@ -199,7 +199,7 @@ public class RegisterActivity extends AppCompatActivity {
                     }
 
                     //check if it's a valid phone number format
-                    if (!Patterns.PHONE.matcher(contactNumber).matches()){
+                    if (!Patterns.PHONE.matcher(contactNumber).matches() || contactNumber.length() != 10){
                         Toast.makeText(RegisterActivity.this, "Enter valid contact number", Toast.LENGTH_SHORT).show();
                         progressBar.setVisibility(View.GONE);
                         return;

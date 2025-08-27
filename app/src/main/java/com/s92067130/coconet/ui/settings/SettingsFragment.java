@@ -281,8 +281,8 @@ public class SettingsFragment extends Fragment {
             String phone = phoneInput.getText().toString().trim();
             String location = locationInput.getText().toString().trim();
 
-            if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phone) || TextUtils.isEmpty(location)) {
-                Toast.makeText(getContext(), "Please fill all fields", Toast.LENGTH_SHORT).show();
+            if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phone) || phone.length() !=10 || TextUtils.isEmpty(location)) {
+                Toast.makeText(getContext(), "Please fill all fields with correct contact number", Toast.LENGTH_SHORT).show();
                 return;
             }
 
