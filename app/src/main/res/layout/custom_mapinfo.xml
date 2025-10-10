@@ -21,17 +21,16 @@
                 android:layout_gravity="center"
                 android:text="STORE DETAILS"
                 android:textColor="#000000"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/infoSnippet"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#333333"
-                android:gravity="center"
-                android:layout_gravity="center_horizontal"
+                android:layout_gravity="start"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="18sp" />
 
             <ImageView
                 android:id="@+id/contactBtn"

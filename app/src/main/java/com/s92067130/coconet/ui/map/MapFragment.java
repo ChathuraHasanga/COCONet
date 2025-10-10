@@ -157,23 +157,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                         // Check if location is available
                         if (lat != null && lng != null && name != null) {
                             DataSnapshot stockDataSnap = userSnapshot.child("stock_data");
+
+                            double totalQuantity = 0;
                             Stock latestStock = null;
-                            long latestTime = Long.MIN_VALUE;
+                            String storeName = null;
 
                             // Loop through stock entries to find latest
                             for (DataSnapshot stockSnap : stockDataSnap.getChildren()) {
                                 Stock stock = stockSnap.getValue(Stock.class);
-                                if (stock != null && stock.timestamp > latestTime) {
-                                    latestTime = stock.timestamp;
-                                    latestStock = stock;
+                                if (stock != null) {
+                                    totalQuantity += stock.quantity;
+                                    if (storeName == null && stock.storeName !=null){
+                                        storeName =stock.storeName;
+                                    }
+
+                                    if (latestStock == null || (stock.date != null && latestStock.date != null &&
+                                            stock.date.compareTo(latestStock.date) > 0)) {
+                                        latestStock = stock;
+                                    }
                                 }
                             }
 
                             // Only add marker if stock exists
-                            if (latestStock != null && latestStock.storeName != null) {
+                            if (totalQuantity >0) {
                                 LatLng position = new LatLng(lat, lng);
                                 String infoText = "Name: " + latestStock.storeName +
-                                        "\nCurrent stock: " + latestStock.quantity+
+                                        "\nCurrent stock: " + totalQuantity+ " Kg" +
                                         "\nOn: " + latestStock.date;
 
                                 Marker marker = myMap.addMarker(new MarkerOptions()

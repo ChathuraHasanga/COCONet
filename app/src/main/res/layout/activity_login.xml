@@ -114,6 +114,17 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.625" />
+            <TextView
+                android:id="@+id/fgetpass"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Forgot password?"
+                android:textColor="#000000"
+                android:clickable="true"
+                android:focusable="true"
+                android:layout_gravity="end"
+                android:padding="4dp"
+                android:onClick="onClickFgetPword"/>
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -159,6 +170,7 @@
             android:layout_gravity="center"
             android:layout_marginBottom="4dp"
             android:layout_marginTop="4dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.498"
@@ -179,6 +191,7 @@
             android:textStyle="bold"
             android:layout_marginTop="10dp"
             android:layout_marginBottom="5dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"

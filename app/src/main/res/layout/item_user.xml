@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="6dp"
+    android:padding="12dp"
+    style="@style/PrimaryButton"
+    android:backgroundTint="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="4dp">
+
+    <TextView
+        android:id="@+id/txtName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#000000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="4dp"/>
+
+    <TextView
+        android:id="@+id/txtEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#555555"
+        android:textSize="16sp"
+        android:paddingBottom="2dp"/>
+
+    <TextView
+        android:id="@+id/txtRole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#222222"
+        android:textSize="16sp"
+        android:paddingBottom="2dp"/>
+
+    <TextView
+        android:id="@+id/txtStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FF5722"
+        android:textSize="16sp"
+        android:paddingBottom="8dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/btnSuspend"
+            style="@style/PrimaryButton"
+            android:backgroundTint="#0037B6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textAllCaps="false"
+            android:layout_marginEnd="6dp"
+            android:text="Suspend "
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnRole"
+            style="@style/PrimaryButton"
+            android:backgroundTint="#0037B6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:text="Role"
+            android:textColor="@color/white"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

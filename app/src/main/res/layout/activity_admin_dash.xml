@@ -54,7 +54,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="COCONet"
+            android:text="Analytics"
             android:textColor="#000000"
             android:textSize="26sp"
             android:textStyle="bold"
@@ -114,7 +114,7 @@
                 android:id="@+id/stockDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Date: "
+                android:text="Period: "
                 android:textSize="18sp"
                 android:textColor="#000000" />
             <TextView
@@ -161,7 +161,7 @@
                 android:id="@+id/newSignUps"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="New SignUps: "
+                android:text="New Sign ups: "
                 android:textColor="#000000"
                 android:textSize="18sp"/>
         </LinearLayout>
@@ -182,12 +182,13 @@
                 android:text="Analysis"
                 android:textStyle="bold"
                 android:textColor="#000000"
-                android:textSize="20dp"/>
+                android:textSize="20sp"/>
 
             <com.github.mikephil.charting.charts.PieChart
                 android:id="@+id/pieChart"
                 android:layout_width="match_parent"
                 android:layout_height="250dp"/>
         </LinearLayout>
+
     </LinearLayout>
 </ScrollView>

@@ -1,6 +1,7 @@
 [versions]
 agp = "8.9.1"
 cardview = "1.0.0"
+cloudinaryAndroid = "1.31.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
@@ -18,9 +19,12 @@ firebaseDatabase = "21.0.0"
 playServicesLocation = "21.3.0"
 zxingAndroidEmbedded = "4.3.0"
 swiperefreshlayout = "1.1.0"
+firebaseMessaging = "25.0.0"
+protoliteWellKnownTypes = "18.0.1"
 
 [libraries]
 cardview = { module = "androidx.cardview:cardview", version.ref = "cardview" }
+cloudinary-android = { module = "com.cloudinary:cloudinary-android", version.ref = "cloudinaryAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -37,6 +41,8 @@ firebase-database = { group = "com.google.firebase", name = "firebase-database",
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxingAndroidEmbedded" }
 swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
+firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+protolite-well-known-types = { group = "com.google.firebase", name = "protolite-well-known-types", version.ref = "protoliteWellKnownTypes" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

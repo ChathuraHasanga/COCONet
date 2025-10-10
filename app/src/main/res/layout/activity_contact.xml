@@ -94,31 +94,76 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:orientation="vertical"
                     android:layout_marginTop="12dp"
-                    android:weightSum="2"
                     android:gravity="center">
 
                     <Space
                         android:layout_width="8dp"
                         android:layout_height="wrap_content" />
 
-                    <Button
-                        android:id="@+id/contactBtn"
-                        style="@style/PrimaryButton"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:backgroundTint="#0037B6"
-                        android:text="View Map"
-                        android:textColor="#FFFFFF"
-                        android:onClick="OnClickBtnBackMap"
-                        android:textSize="20dp"
-                        android:textStyle="bold" />
+                    <Space
+                        android:layout_width="8dp"
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/contactBtn"
+            style="@style/PrimaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#0037B6"
+            android:text="View Map"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="#FFFFFF"
+            android:onClick="OnClickBtnBackMap"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnFavourite"
+            style="@style/PrimaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add to favourites"
+            android:backgroundTint="#0037B6"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginTop="12dp"/>
+        <Button
+            android:id="@+id/btnSell"
+            style="@style/PrimaryButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#0037B6"
+            android:layout_marginEnd="8dp"
+            android:text="Sell Coconuts"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginTop="16dp"/>
+
+        <Button
+            android:id="@+id/btnRequestBuy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#0037B6"
+            android:layout_marginEnd="8dp"
+            style="@style/PrimaryButton"
+            android:text="Request to Buy"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:layout_marginTop="16dp"/>
 
     </LinearLayout>
 </ScrollView>

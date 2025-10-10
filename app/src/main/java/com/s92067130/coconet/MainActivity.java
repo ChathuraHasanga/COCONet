@@ -1,22 +1,37 @@
 package com.s92067130.coconet;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.s92067130.coconet.databinding.ActivityMainBinding;
+import com.s92067130.coconet.ui.home.HomeFragment;
 
 /**
  * MainActivity hosts the main navigation UI of the application.
@@ -70,7 +85,77 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
+        //retry button for connection errors
+        Button retryButton = findViewById(R.id.retryBtn);
+        retryButton.setOnClickListener(v-> {
+            HomeFragment homeFragment = (HomeFragment) getSupportFragmentManager()
+                    .findFragmentById(R.id.nav_host_fragment_activity_main)
+                    .getChildFragmentManager()
+                    .getFragments().get(0);
+            if (homeFragment != null) homeFragment.onResume(); //reload dashboard
+        });
+
+        DatabaseReference notifRef = FirebaseDatabase.getInstance().getReference("notifications");
+
+        notifRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                NotificationModel notif = snapshot.getValue(NotificationModel.class);
+                if (notif != null && !notif.read){
+                    showLocalNotification(notif.title, notif.body);
+
+                    snapshot.getRef().child("read").setValue(true);
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+
     }
+
+    private void showLocalNotification(String title, String body){
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "default")
+                .setSmallIcon(R.drawable.baseline_add_alert_24)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body)) // full text
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        NotificationManagerCompat manager = NotificationManagerCompat.from(this);
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        manager.notify((int) System.currentTimeMillis(), builder.build());
+    }
+
 
     /**
      * Handles click on "Add Stock" button.
@@ -88,16 +173,51 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Handles click on "Map" button in custom UI.
-     * Switches the BottomNavigationView to the Map tab.
-     *
-     * @param view The button view that was clicked.
-     * @return void
-     */
-    public void OnMapBtnClicked(View view) {
-        BottomNavigationView navView = findViewById(R.id.nav_view);
-        navView.setSelectedItemId(R.id.navigation_map); // Switch to Map tab
+    public void onClickFavorites(View view) {
+        try {
+            Intent intent = new Intent(MainActivity.this, FavoritesActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void OnOrdersBtnClicked(View view) {
+        try {
+            Intent intent = new Intent(MainActivity.this, SellerOrdersActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void OnPurchasesBtnClicked(View view) {
+        try {
+            Intent intent = new Intent(MainActivity.this, BuyerOrdersActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void OnWalletBtnClicked(View view) {
+        try {
+            Intent intent = new Intent(MainActivity.this, WalletActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void btnUserManagement(View view) {
+        try {
+
+            Intent intent = new Intent(MainActivity.this, UserManagementActivity.class);
+            startActivity(intent);
+            finish();
+        }catch (Exception e){
+            Toast.makeText(this, "Error navigating: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

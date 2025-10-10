@@ -1,5 +1,6 @@
 package com.s92067130.coconet;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -9,6 +10,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.s92067130.coconet.ui.settings.SettingsFragment;
 
 import org.w3c.dom.Text;
 
@@ -45,7 +48,7 @@ import java.util.Locale;
  */
 public class StockInputActivity extends AppCompatActivity {
 
-    private EditText editTextStoreName, editTextQuantity;
+    private EditText editTextQuantity;
     private Button submitButton;
 
     // Firebase authentication and database references
@@ -53,6 +56,9 @@ public class StockInputActivity extends AppCompatActivity {
     private DatabaseReference databaseReference;
 
     private LinearLayout stockListContainer;
+
+    //store name of current user
+    private String currentStoreName = null;
 
     /**
      * Called when the activity is first created.
@@ -86,19 +92,54 @@ public class StockInputActivity extends AppCompatActivity {
             databaseReference = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users");
 
             // Initialize UI elements
-            editTextStoreName = findViewById(R.id.editTextStoreName);
             editTextQuantity = findViewById(R.id.editTextQuantity);
             submitButton = findViewById(R.id.buttonSubmit);
             stockListContainer = findViewById(R.id.stockListContainer);
 
+            //load user's store name
+            fetchUserStoreName();
+
             //submit button click
-            submitButton.setOnClickListener(v -> onClickSubmit(v));
+            submitButton.setOnClickListener(this::onClickSubmit);
 
             //load existing stock entries
-            loadAllUsersLatestStockEntries();
+            loadOwnStockEntries();
+
+            getSupportFragmentManager().addOnBackStackChangedListener(() ->{
+                fetchUserStoreName();
+            });
 
         }catch (Exception e){
             Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        fetchUserStoreName();
+    }
+
+    private void fetchUserStoreName(){
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null){
+            String userId = currentUser.getUid();
+            databaseReference.child(userId).child("storeName")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (snapshot.exists()){
+                                currentStoreName = snapshot.getValue(String.class);
+                            }else{
+                                currentStoreName = null;
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(StockInputActivity.this, "Failed to load store name.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         }
     }
 
@@ -111,49 +152,82 @@ public class StockInputActivity extends AppCompatActivity {
      */
     public void onClickSubmit(View view){
         try {
-            String storeName = editTextStoreName.getText().toString().trim();
-            String quantityStr = editTextQuantity.getText().toString().trim();
 
-            // Validate input fields
-            if (TextUtils.isEmpty(storeName) || TextUtils.isEmpty(quantityStr)){
-                Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show();
+            if (currentStoreName == null || currentStoreName.trim().isEmpty()){
+                new AlertDialog.Builder(this)
+                        .setTitle("Store Name Required")
+                        .setMessage("You must set your store name in Settings before submitting stock. Do you want to go there now?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(android.R.id.content, new SettingsFragment())
+                                    .addToBackStack(null)
+                                    .commit();
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
                 return;
             }
+                String quantityStr = editTextQuantity.getText().toString().trim();
 
-            int quantity;
-            try {
-                quantity = Integer.parseInt(quantityStr);
-            }catch(NumberFormatException e){
-                Toast.makeText(this, "Invalid quantity", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                // Validate input fields
+                if (TextUtils.isEmpty(quantityStr)){
+                    Toast.makeText(this, "Please enter your coconut amount", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            // Ensure user is logged in
-            FirebaseUser currentUser = mAuth.getCurrentUser();
-            if (currentUser == null) {
-                Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                int quantity;
+                try {
+                    quantity = Integer.parseInt(quantityStr);
+                }catch(NumberFormatException e){
+                    Toast.makeText(this, "Invalid quantity", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            String userId = currentUser.getUid();
-            long timestamp = System.currentTimeMillis();
-            String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+                if (quantity == 0){
+                    Toast.makeText(this, "Amount cannot be zero", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            Stock stock = new Stock(storeName, quantity, timestamp, date);
+                // Ensure user is logged in
+                FirebaseUser currentUser = mAuth.getCurrentUser();
+                if (currentUser == null) {
+                    Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            //save inside data under users/uid
-            databaseReference.child(userId).child("stock_data").push().setValue(stock)
-                    .addOnCompleteListener(task -> {
-                        Toast.makeText(this, "Stock submitted successfully", Toast.LENGTH_SHORT).show();
-                        // Clear input fields
-                        editTextStoreName.setText("");
-                        editTextQuantity.setText("");
-                        // Refresh stock list
-                        loadAllUsersLatestStockEntries(); // Refresh the stock list after submission
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to submit: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                String userId = currentUser.getUid();
+                long timestamp = System.currentTimeMillis();
+                String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+
+                Stock stock = new Stock(quantity, timestamp, date, currentStoreName);
+
+                //save inside data under users/uid
+                databaseReference.child(userId).child("stock_data").push().setValue(stock)
+                        .addOnCompleteListener(task -> {
+                            Toast.makeText(this, "Stock submitted successfully", Toast.LENGTH_SHORT).show();
+                            // Clear input fields
+                            editTextQuantity.setText("");
+                            // Refresh stock list
+                            loadOwnStockEntries(); // Refresh the stock list after submission
+
+                            DatabaseReference stockRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
+                                    .getReference().child("notifications")
+                                    .push();
+
+                            NotificationModel stockNotif = new NotificationModel(
+                                    "Fresh Stock Available! \uD83E\uDD65",
+                                    currentStoreName+ " just added " + quantity + " coconuts.",
+                                    System.currentTimeMillis(),
+                                    "stock_update",
+                                    false
+                            );
+                            stockRef.setValue(stockNotif);
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(this, "Failed to submit: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        });
+
         }catch (Exception e){
             Toast.makeText(this, "Error submitting stock: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
@@ -164,46 +238,39 @@ public class StockInputActivity extends AppCompatActivity {
      * Loads the latest stock entry from each user (within the last 3 days)
      * and displays them in the LinearLayout container.
      */
-    private void loadAllUsersLatestStockEntries() {
+    private void loadOwnStockEntries() {
         try {
-            stockListContainer.removeAllViews(); // Clear old entries
+            LinearLayout container = findViewById(R.id.stockListContainer);
+            container.removeAllViews(); // Clear old entries
 
-            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseUser currentUser = mAuth.getCurrentUser();
+            if (currentUser == null) return;
+            String userId = currentUser.getUid();
+
+            databaseReference.child(userId).child("stock_data")
+                    .addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                     try {
-                        ArrayList<Stock> latestStockPerUser = new ArrayList<>();
+                        ArrayList<Stock> stockList = new ArrayList<>();
 
                         long threeDaysInMillis = 3 * 24 * 60 * 60 * 1000L; // 3 days in milliseconds
                         long currentTime = System.currentTimeMillis();
 
-                        //loop through all users
-                        for (DataSnapshot userSnap : snapshot.getChildren()) {
-                            DataSnapshot stockSnap = userSnap.child("stock_data");
-                            Stock latestStock = null;
-                            long latestTimestamp = Long.MIN_VALUE;
-
                             //Get the most recent stock entry for each user
-                            for (DataSnapshot entrySnap : stockSnap.getChildren()) {
+                            for (DataSnapshot entrySnap : snapshot.getChildren()) {
                                 Stock stock = entrySnap.getValue(Stock.class);
-                                if (stock != null && stock.storeName != null && stock.timestamp > latestTimestamp) {
-                                    latestTimestamp = stock.timestamp;
-                                    latestStock = stock;
+                                if (stock != null && (currentTime - stock.timestamp <= threeDaysInMillis)) {
+                                    stockList.add(stock);
                                 }
                             }
 
-                            // Check if the latest stock entry is within the last 3 days
-                            if (latestStock != null && (currentTime - latestStock.timestamp <= threeDaysInMillis)) {
-                                latestStockPerUser.add(latestStock);
-                            }
-                        }
-
                         // Sort by most recent across users
-                        Collections.sort(latestStockPerUser, (a, b) -> Long.compare(b.timestamp, a.timestamp));
+                        Collections.sort(stockList, (a, b) -> Long.compare(b.timestamp, a.timestamp));
 
                         // Inflate and display each stock entry
                         LayoutInflater inflater = LayoutInflater.from(StockInputActivity.this);
-                        for (Stock stock : latestStockPerUser) {
+                        for (Stock stock : stockList) {
                             View stockView = inflater.inflate(R.layout.item_stock_entry, stockListContainer, false);
 
                             TextView dataView = stockView.findViewById(R.id.textViewDate);
@@ -211,10 +278,10 @@ public class StockInputActivity extends AppCompatActivity {
                             TextView locationView = stockView.findViewById(R.id.textViewLocation);
 
                             dataView.setText("Date : " + stock.date);
-                            quantityView.setText("Quantity : " + stock.quantity);
+                            quantityView.setText("Amount(Kg) : " + stock.quantity);
                             locationView.setText("Store : " + stock.storeName);
 
-                            stockListContainer.addView(stockView);
+                            container.addView(stockView);
                         }
                     }catch (Exception e){
                         Toast.makeText(StockInputActivity.this, "Error processing stock data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -252,21 +319,22 @@ public class StockInputActivity extends AppCompatActivity {
      * Model class representing a stock entry.
      */
     public static class Stock{
-        public String storeName;
         public int quantity;
         public long timestamp;
         public String date;
+        public String storeName;
 
         public Stock() {
             // Needed for Firebase
         }
 
         // Constructor to create a stock object
-        public Stock (String storeName, int quantity, long timestamp, String date){
-            this.storeName = storeName;
+        public Stock (int quantity, long timestamp, String date, String storeName){
             this.quantity = quantity;
             this.timestamp = timestamp;
             this.date = date;
+            this.storeName = storeName;
         }
+
     }
 }

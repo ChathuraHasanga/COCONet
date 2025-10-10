@@ -28,7 +28,7 @@
             android:textColor="#000000"
             android:textSize="25sp"
             android:textStyle="bold"
-            android:layout_gravity="start"
+            android:layout_gravity="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -50,6 +50,45 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
+
+                        <ImageView
+                            android:id="@+id/imageViewProfile"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/baseline_account_circle_24"
+                            android:scaleType="centerCrop"
+                            android:background="@drawable/image_background" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_gravity="center"
+                            android:layout_marginBottom="16dp">
+                        <Button
+                            android:id="@+id/buttonChoose"
+                            android:layout_width="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="#0037B6"
+                            android:text="Choose"
+                            android:textColor="#FFFFFF"
+                            android:layout_marginEnd="8dp"
+                            android:textSize="14sp"
+                            style="@style/PrimaryButton"/>
+
+                        <Button
+                            android:id="@+id/buttonUpload"
+                            android:layout_width="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="#0037B6"
+                            android:text="Upload"
+                            android:textColor="#FFFFFF"
+                            android:textSize="14sp"
+                            style="@style/PrimaryButton"/>
+                        </LinearLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -166,6 +205,43 @@
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:id="@+id/textStore"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Store Name"
+                            android:layout_marginTop="8dp"
+                            android:textColor="#000000"
+                            android:textSize="22sp"
+                            app:boxStrokeColor="@color/purple_700"
+                            app:hintTextColor="@color/purple_700"
+                            app:boxStrokeWidth="2dp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.0"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintVertical_bias="0.35" >
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/editTextStore"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="text"
+                                android:textColor="#000000"
+                                android:ems="10"
+                                android:hint="Your store Name"
+                                android:textColorHint="#808080"
+                                android:textSize="20sp"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintHorizontal_bias="0.0"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintVertical_bias="0.415"/>
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:id="@+id/textView12"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -242,60 +318,6 @@
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintVertical_bias="0.655" />
 
-
-                        <TextView
-                            android:id="@+id/textView13"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="4dp"
-                            android:text="Reset Schedule"
-                            android:textColor="#000000"
-                            android:textSize="25sp"
-                            android:textStyle="bold"
-                            android:layout_gravity="center"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintVertical_bias="0.741" />
-
-                        <TextView
-                            android:id="@+id/resetDetails"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="4dp"
-                            android:text="Your data automatically reset after 3 days."
-                            android:textColor="#000000"
-                            android:textSize="20sp"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintVertical_bias="0.798" />
-
-                        <Button
-                            android:id="@+id/resetBtn"
-                            style="@style/PrimaryButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:layout_marginBottom="4dp"
-                            android:backgroundTint="#0037B6"
-                            android:text="Reset Now"
-                            android:textColor="#FFFFFF"
-                            android:textSize="20sp"
-                            android:textStyle="bold"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintHorizontal_bias="0.0"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:layout_constraintVertical_bias="0.872" />
-
                         <Button
                             android:id="@+id/logoutBtn"
                             style="@style/PrimaryButton"
@@ -303,7 +325,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
                             android:layout_marginBottom="4dp"
-                            android:backgroundTint="#0037B6"
+                            android:backgroundTint="#FF0000"
                             android:text="Logout"
                             android:textColor="#FFFFFF"
                             android:textSize="20sp"

@@ -57,7 +57,7 @@ import java.util.UUID;
 public class RegisterActivity extends AppCompatActivity {
 
     // Declare variables for views and Firebase
-    EditText editTextEmail, editTextPassword, editTextName, editContactNumber, editTextConfirmPassword;
+    EditText editTextEmail, editTextPassword, editTextName, editContactNumber, editTextConfirmPassword, editTextStoreName;
     Button buttonReg;
     FirebaseAuth mAuth;
     ProgressBar progressBar;
@@ -71,6 +71,7 @@ public class RegisterActivity extends AppCompatActivity {
     String district;
     String province;
     String role = "user"; //default role for new users
+    String status = "active"; //default status
     String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
     private Double latitude = null;
     private Double longitude = null;
@@ -133,6 +134,8 @@ public class RegisterActivity extends AppCompatActivity {
             textView = findViewById(R.id.loginTxt);
             locationTxt = findViewById(R.id.locationText);
             permissionBtn = findViewById(R.id.permissionbtn);
+            editTextStoreName = findViewById(R.id.editTextStore);
+
 
             //Request location permission or fetch location if permission already granted
             permissionBtn.setOnClickListener(new View.OnClickListener() {
@@ -156,19 +159,32 @@ public class RegisterActivity extends AppCompatActivity {
                 }
             });
 
+            //Create notification channel for Android 8+
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O){
+                android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                        "default",
+                        "Default Channel",
+                        android.app.NotificationManager.IMPORTANCE_HIGH
+                );
+                android.app.NotificationManager manager = getSystemService(android.app.NotificationManager.class);
+                manager.createNotificationChannel(channel);
+            }
+
             //Handle register button click
             buttonReg.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
 
                     progressBar.setVisibility(view.VISIBLE);
-                    String email, password, name, contactNumber, confirmPassword;
+                    String email, password, name, contactNumber, confirmPassword, storeName;
                     email = String.valueOf(editTextEmail.getText());
                     password = String.valueOf(editTextPassword.getText());
                     name = String.valueOf(editTextName.getText());
                     contactNumber = String.valueOf(editContactNumber.getText());
                     confirmPassword = String.valueOf(editTextConfirmPassword.getText());
+                    storeName = String.valueOf(editTextStoreName.getText());
                     String locationTxt = String.valueOf(RegisterActivity.this.locationTxt.getText());
+                    Long timestamp = System.currentTimeMillis();
 
                     //check name field empty or not
                     if (TextUtils.isEmpty(name)){
@@ -271,7 +287,7 @@ public class RegisterActivity extends AppCompatActivity {
                                         FirebaseUser user = mAuth.getCurrentUser();
 
                                         //save user data to realtime database
-                                        saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, password, latitude, longitude, district, province, date, role);
+                                        saveUserDetailsToDatabase(user.getUid(), name, email,contactNumber, locationTxt, latitude, longitude, district, province, date, role,status, storeName, timestamp);
 
                                         Toast.makeText(RegisterActivity.this, "Account Created.",
                                                 Toast.LENGTH_SHORT).show();
@@ -306,49 +322,49 @@ public class RegisterActivity extends AppCompatActivity {
      * @param loginToken Unique login token
      * @return void
      */
-    private void sendEmailWithQRCode(String name, String email, String loginToken) {
-        new Thread(() -> {
-            try{
-                URL url = new URL("https://api.emailjs.com/api/v1.0/email/send");
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST");
-                conn.setRequestProperty("origin", "http://localhost");
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-
-                String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?data=" + loginToken + "&size=150x150";
-
-                JSONObject jsonParam = new JSONObject();
-                jsonParam.put("service_id", "service_vko8muz");
-                jsonParam.put("template_id","template_2ufhjpe");;
-                jsonParam.put("user_id", "pEb0MjlwafPm6QUFl");
-
-                JSONObject templateParams = new JSONObject();
-                templateParams.put("user_name", name);
-                templateParams.put("user_email", email);
-                templateParams.put("qr_code_url", qrUrl);
-
-                jsonParam.put("template_params", templateParams);
-
-                OutputStream os = conn.getOutputStream();
-                os.write(jsonParam.toString().getBytes());
-                os.flush();
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK){
-                    runOnUiThread(() -> Toast.makeText(this, "Email with QR code sent!", Toast.LENGTH_SHORT).show());
-                }else{
-                    runOnUiThread(() -> Toast.makeText(this, "Failed to send email."+ responseCode, Toast.LENGTH_SHORT).show());
-                }
-
-                conn.disconnect();
-            }catch (Exception e){
-                e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(this, "Error sending email: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-            }
-        }).start();
-    }
+//    private void sendEmailWithQRCode(String name, String email, String loginToken) {
+//        new Thread(() -> {
+//            try{
+//                URL url = new URL("https://api.emailjs.com/api/v1.0/email/send");
+//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//                conn.setRequestMethod("POST");
+//                conn.setRequestProperty("origin", "http://localhost");
+//                conn.setRequestProperty("Content-Type", "application/json");
+//                conn.setDoOutput(true);
+//
+//                String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?data=" + loginToken + "&size=150x150";
+//
+//                JSONObject jsonParam = new JSONObject();
+//                jsonParam.put("service_id", "service_vko8muz");
+//                jsonParam.put("template_id","template_2ufhjpe");;
+//                jsonParam.put("user_id", "pEb0MjlwafPm6QUFl");
+//
+//                JSONObject templateParams = new JSONObject();
+//                templateParams.put("user_name", name);
+//                templateParams.put("user_email", email);
+//                templateParams.put("qr_code_url", qrUrl);
+//
+//                jsonParam.put("template_params", templateParams);
+//
+//                OutputStream os = conn.getOutputStream();
+//                os.write(jsonParam.toString().getBytes());
+//                os.flush();
+//                os.close();
+//
+//                int responseCode = conn.getResponseCode();
+//                if (responseCode == HttpURLConnection.HTTP_OK){
+//                    runOnUiThread(() -> Toast.makeText(this, "Email with QR code sent!", Toast.LENGTH_SHORT).show());
+//                }else{
+//                    runOnUiThread(() -> Toast.makeText(this, "Failed to send email."+ responseCode, Toast.LENGTH_SHORT).show());
+//                }
+//
+//                conn.disconnect();
+//            }catch (Exception e){
+//                e.printStackTrace();
+//                runOnUiThread(() -> Toast.makeText(this, "Error sending email: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+//            }
+//        }).start();
+//    }
 
     /**
      * Saves user details to Firebase Realtime Database and sends QR code via email.
@@ -358,7 +374,6 @@ public class RegisterActivity extends AppCompatActivity {
      * @param email User's email
      * @param contactNumber User's phone number
      * @param locationTxt Address/location of the user
-     * @param password User's password
      * @param latitude GPS latitude
      * @param longitude GPS longitude
      * @param district User's district
@@ -367,11 +382,10 @@ public class RegisterActivity extends AppCompatActivity {
      * @param role User role (default "user")
      * @return void
      */
-    private void saveUserDetailsToDatabase(String userId, String name, String email, String contactNumber, String locationTxt, String password, Double latitude, Double longitude, String district, String province, String date, String role){
+    private void saveUserDetailsToDatabase(String userId, String name, String email, String contactNumber, String locationTxt, Double latitude, Double longitude, String district, String province, String date, String role, String status, String storeName, Long timestamp){
 
         try {
-            String loginToken = UUID.randomUUID().toString(); //generate a unique login token
-            User user = new User(name, email,contactNumber, locationTxt, loginToken, password, latitude, longitude, district, province, date, this.role);
+            User user = new User(name, email,contactNumber, locationTxt, latitude, longitude, district, province, date, this.role, status, storeName, timestamp);
 
             //save data under the user's UID
             mDatabase.child("users").child(userId).setValue(user)
@@ -380,7 +394,18 @@ public class RegisterActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()){
                                 Toast.makeText(RegisterActivity.this, "User Details saved.", Toast.LENGTH_SHORT).show();
-                                sendEmailWithQRCode(name, email, loginToken);
+//                                sendEmailWithQRCode(name, email, loginToken);
+
+                                // Add notification automatically to /notifications node
+                                DatabaseReference notifRef = mDatabase.child("notifications").push();
+                                NotificationModel notif = new NotificationModel(
+                                        "New User Registered" ,
+                                        name + " from " + province + " just signed up.",
+                                        System.currentTimeMillis(),
+                                        "user_signup",
+                                        false
+                                );
+                                notifRef.setValue(notif);
                             }else{
                                 Toast.makeText(RegisterActivity.this, "Failed to save User Details", Toast.LENGTH_SHORT).show();
                             }
@@ -434,11 +459,11 @@ public class RegisterActivity extends AppCompatActivity {
                                 province = addresses.get(0).getAdminArea();
                                 locationTxt.setText(address); //set address in editText
                             } else {
-                                locationTxt.setText("Unable to get address.");
+                                locationTxt.setText("Lat: " + latitude + ", Lon: " + longitude);
                             }
                         } catch (IOException e) {
                             e.printStackTrace();
-                            locationTxt.setText("Geocoder error");
+                            locationTxt.setText("Lat: " + latitude + ", Lon: " + longitude);
                         }
 
                     } else {
@@ -458,31 +483,54 @@ public class RegisterActivity extends AppCompatActivity {
         public String email;
         public String name;
         public String contactNumber;
-        public String loginToken;
-        public String password;
         public Double latitude;
         public Double longitude;
         public String district;
         public String province;
         public String date;
         public String role;
+        public String status;
+        public String storeName;
+        public Long timestamp;
 
         /**
          * User model class representing all the fields stored in Firebase Realtime Database.
          */
-        public User(String name, String email, String contactNumber, String locationTxt, String loginToken, String password, Double latitude, Double longitude, String district, String province, String date, String role){
+        public User(String name, String email, String contactNumber, String locationTxt, Double latitude, Double longitude, String district, String province, String date, String role, String status, String storeName, Long timestamp) {
             this.name = name;
             this.contactNumber = contactNumber;
             this.email = email;
             this.locationTxt = locationTxt;
-            this.loginToken = loginToken;
-            this.password = password;
             this.latitude = latitude;
             this.longitude = longitude;
             this.district = district;
             this.province = province;
             this.date = date;
             this.role = role;
+            this.status = "active"; //default status
+            this.storeName = storeName;
+            this.timestamp = timestamp;
+        }
+    }
+
+    public static class NotificationModel {
+
+        public String title;
+        public String body;
+        public long timestamp;
+        public String type;
+        public boolean read;
+
+        public NotificationModel(){
+            // Default constructor required for calls to DataSnapshot.getValue(User.class)
+        }
+
+        public NotificationModel(String title, String body, long timestamp, String type, boolean read) {
+            this.title = title;
+            this.body = body;
+            this.timestamp = timestamp;
+            this.type = type;
+            this.read = read;
         }
     }
 }

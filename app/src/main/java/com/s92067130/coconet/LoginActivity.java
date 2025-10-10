@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText editTextEmail, editTextPassword;
     Button buttonLogin;
     ProgressBar progressBar;
-    TextView textView;
+    TextView textView, forgotPass;
 
     // Firebase authentication instance
     FirebaseAuth mAuth;
@@ -100,6 +100,7 @@ public class LoginActivity extends AppCompatActivity {
             buttonLogin = findViewById(R.id.loginbtn);
             progressBar = findViewById(R.id.progressbar);
             textView = findViewById(R.id.registerTxt);
+            forgotPass = findViewById(R.id.fgetpass);
 
             // Register text click: navigate to registration screen
             textView.setOnClickListener(new View.OnClickListener() {
@@ -167,16 +168,29 @@ public class LoginActivity extends AppCompatActivity {
                                                 DatabaseReference userRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
                                                         .getReference("users").child(user.getUid());
 
-                                                userRef.child("role").get().addOnSuccessListener(roleSnapshot -> {
-                                                    String role= roleSnapshot.getValue(String.class);
-                                                    if (role != null){
-                                                        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-                                                        prefs.edit().putString("role",role).apply();
+                                                userRef.get().addOnSuccessListener(snapshot -> {
+                                                    if (snapshot.exists()) {
+                                                        String role = snapshot.child("role").getValue(String.class);
+                                                        String status = snapshot.child("status").getValue(String.class);
+
+                                                        if ("suspended".equalsIgnoreCase(status)) {
+                                                            mAuth.signOut();
+                                                            Toast.makeText(LoginActivity.this, "Your account has been suspended. Please contact support.", Toast.LENGTH_LONG).show();
+                                                            return;
+                                                        }
+                                                        if (role != null) {
+                                                            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+                                                            prefs.edit().putString("role", role).apply();
+                                                        }
+
+                                                        // Log login
+                                                        UserLogger.logUserAction("login");
+
+                                                        Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
+                                                        Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                                                        startActivity(intent);
+                                                        finish();
                                                     }
-                                                    Toast.makeText(getApplicationContext(), "Login Successful", Toast.LENGTH_SHORT).show();
-                                                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                                                    startActivity(intent);
-                                                    finish();
                                                 }).addOnFailureListener(e -> {
                                                     Toast.makeText(LoginActivity.this, "Failed to load user role: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                                 });
@@ -215,6 +229,15 @@ public class LoginActivity extends AppCompatActivity {
     public void onScanBtnClick(View view) {
         try {
             Intent intent = new Intent(LoginActivity.this, ScanActivity.class);
+            startActivity(intent);
+        }catch (Exception e){
+            Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void onClickFgetPword(View view) {
+        try {
+            Intent intent = new Intent(LoginActivity.this, ForgotPasswordActivity.class);
             startActivity(intent);
         }catch (Exception e){
             Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();

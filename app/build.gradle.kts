@@ -49,6 +49,7 @@ dependencies {
     implementation(libs.firebase.database)
     implementation(libs.play.services.location)
     implementation(libs.swiperefreshlayout)
+    implementation(libs.protolite.well.known.types)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -70,6 +71,14 @@ dependencies {
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    implementation("com.google.firebase:firebase-messaging:23.4.1")
+    implementation("com.google.firebase:firebase-functions:20.4.0")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
 
 
 }

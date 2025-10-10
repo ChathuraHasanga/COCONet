@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:layout_marginBottom="80dp"
     android:background="#F1F9F1"
+    android:orientation="vertical"
     android:padding="16dp"
     tools:context=".StockInputActivity">
 
@@ -84,9 +84,9 @@
             android:layout_marginTop="4dp"
             android:layout_marginEnd="8dp"
             android:layout_marginBottom="4dp"
-            android:hint="Quantity"
+            android:hint="Amount(Kg)"
             android:textColor="#000000"
-            android:textSize="22dp"
+            android:textSize="22sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
@@ -109,7 +109,7 @@
             android:layout_marginStart="4dp"
             android:layout_marginEnd="4dp"
             android:ems="10"
-            android:hint="Enter amount"
+            android:hint="Enter New amount(Kg)"
             android:inputType="number"
             android:textColor="#000000"
             android:textColorHint="#000000"
@@ -122,62 +122,14 @@
             app:layout_constraintVertical_bias="0.146" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textView23"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="4dp"
-            android:hint="Store Name"
-            android:textColor="#000000"
-            android:textSize="22sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.247"
-            app:boxCornerRadiusTopStart="12dp"
-            app:boxCornerRadiusTopEnd="12dp"
-            app:boxCornerRadiusBottomStart="12dp"
-            app:boxCornerRadiusBottomEnd="12dp"
-            app:boxBackgroundMode="outline"
-            app:boxStrokeColor="#447EFF"
-            app:hintTextColor="#447EFF"
-            app:boxStrokeWidth="2dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editTextStoreName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:ems="10"
-            android:inputType="text"
-            android:hint="Enter Store Name"
-            android:textSize="20sp"
-            android:textColor="#000000"
-            android:textColorHint="#000000"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.31" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
         <Button
             android:id="@+id/buttonSubmit"
             style="@style/PrimaryButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="12dp"
             android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginEnd="12dp"
             android:layout_marginBottom="4dp"
             android:backgroundTint="#0037B6"
             android:text="Submit"
@@ -213,14 +165,23 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.519" />
 
-        <LinearLayout
-            android:id="@+id/stockListContainer"
+        <ScrollView
+            android:id="@+id/stockScrollView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="12dp"
-            android:visibility="visible"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true"
+            android:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/stockListContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="8dp"/>
+        </ScrollView>
+
 
 
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

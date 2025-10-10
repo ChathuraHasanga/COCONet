@@ -1,41 +1,57 @@
 package com.s92067130.coconet.ui.settings;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.icu.util.Calendar;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
+import com.google.firebase.database.core.Context;
 import com.s92067130.coconet.LoginActivity;
 import com.s92067130.coconet.R;
+import com.s92067130.coconet.UserLogger;
 import com.s92067130.coconet.databinding.FragmentSettingsBinding;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import com.cloudinary.Cloudinary;
+import com.cloudinary.utils.ObjectUtils;
+
 
 /**
  * Fragment to manage and update user profile including:
@@ -46,7 +62,7 @@ import java.util.Map;
  */
 public class SettingsFragment extends Fragment {
 
-    private EditText nameInput, emailInput, phoneInput, locationInput;
+    private EditText nameInput, emailInput, phoneInput, locationInput, storeNameText;
     private Button updateBtn, logoutBtn, resetBtn, permissionBtn;
 
     // Firebase references
@@ -57,6 +73,11 @@ public class SettingsFragment extends Fragment {
     // Location services
     private FusedLocationProviderClient locationClient;
     private ActivityResultLauncher<String> requestPermissionLauncher;
+
+    private ImageView imageViewProfile;
+    private Button buttonChoose, buttonUpload;
+    private Uri selectedImageUri;
+
 
     // UI Elements
     private FragmentSettingsBinding binding;
@@ -100,11 +121,30 @@ public class SettingsFragment extends Fragment {
             emailInput = root.findViewById(R.id.editTextEmail);
             phoneInput = root.findViewById(R.id.editTextNumber);
             locationInput = root.findViewById(R.id.locationText);
+            storeNameText =root.findViewById(R.id.editTextStore);
 
+            buttonChoose = root.findViewById(R.id.buttonChoose);
+            buttonUpload = root.findViewById(R.id.buttonUpload);
             updateBtn = root.findViewById(R.id.buttonUpdate);
             logoutBtn = root.findViewById(R.id.logoutBtn);
             resetBtn = root.findViewById(R.id.resetBtn);
             permissionBtn = root.findViewById(R.id.permissionBtn); // "Give Permission"
+
+            imageViewProfile = root.findViewById(R.id.imageViewProfile);
+
+            buttonChoose.setOnClickListener(v-> {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/*");
+                startActivityForResult(intent, 101);
+            });
+
+            buttonUpload.setOnClickListener(v -> {
+                if (selectedImageUri != null) {
+                        uploadImageToCloudinary(selectedImageUri);
+                }else{
+                    Toast.makeText(getContext(), "Please select an image first", Toast.LENGTH_SHORT).show();
+                }
+            });
 
             // Handle location permission request result
             requestPermissionLauncher =
@@ -121,43 +161,17 @@ public class SettingsFragment extends Fragment {
 
             // Logout button click → sign out user and redirect to LoginActivity
             logoutBtn.setOnClickListener(v -> {
+
+                // Log logout
+                UserLogger.logUserAction("logout");
                 auth.signOut();
+
                 startActivity(new Intent(getActivity(), LoginActivity.class));
                 requireActivity().finish();
             });
 
-            // Reset button click → remove today's storeName values
-            resetBtn.setOnClickListener(v -> {
-                long todayStartMillis = getStartOfDayMillis();
-
-                userRef.child("stock_data").addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        for (DataSnapshot stockItem : snapshot.getChildren()) {
-
-                            Long timestamp = stockItem.child("timestamp").getValue(Long.class);
-
-                            // If storeName exists, remove only that field if the record is added today
-                            if (timestamp != null && timestamp >= todayStartMillis) {
-                                stockItem.getRef().child("storeName").removeValue();
-                            }
-                        }
-
-                        Toast.makeText(getContext(), "Today's store data reset successfully!", Toast.LENGTH_SHORT).show();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(getContext(), "Reset failed: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            });
-
             // Permission button click → request location access
             permissionBtn.setOnClickListener(v -> requestLocationPermission());
-
-            // Auto cleanup old store names
-            autoRemoveExpiredStoreNames();
 
             // Load user data from Firebase
             loadUserData();
@@ -258,6 +272,14 @@ public class SettingsFragment extends Fragment {
                     emailInput.setText(snapshot.child("email").getValue(String.class));
                     phoneInput.setText(snapshot.child("contactNumber").getValue(String.class));
                     locationInput.setText(snapshot.child("locationTxt").getValue(String.class));
+                    storeNameText.setText(snapshot.child("storeName").getValue(String.class));
+
+                    String profileUrl = snapshot.child("profileImageUrl").getValue(String.class);
+                    if (profileUrl != null && !profileUrl.isEmpty()){
+                        Glide.with(SettingsFragment.this)
+                                .load(profileUrl)
+                                .into(imageViewProfile);
+                    }
                 }
 
                 @Override
@@ -280,6 +302,7 @@ public class SettingsFragment extends Fragment {
             String email = emailInput.getText().toString().trim();
             String phone = phoneInput.getText().toString().trim();
             String location = locationInput.getText().toString().trim();
+            String storeName = storeNameText.getText().toString().trim();
 
             if (TextUtils.isEmpty(name) || TextUtils.isEmpty(email) || TextUtils.isEmpty(phone) || phone.length() !=10 || TextUtils.isEmpty(location)) {
                 Toast.makeText(getContext(), "Please fill all fields with correct contact number", Toast.LENGTH_SHORT).show();
@@ -290,6 +313,7 @@ public class SettingsFragment extends Fragment {
             updates.put("name", name);
             updates.put("email", email);
             updates.put("contactNumber", phone);
+            updates.put("storeName", storeName);
             updates.put("locationTxt", location);
             updates.put("lastUpdated", System.currentTimeMillis());
 
@@ -302,33 +326,65 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    /**
-     * Automatically removes "storeName" entries older than 3 days.
-     */
-    private void autoRemoveExpiredStoreNames(){
-        try {
-            long threeDaysMillis = 3L * 24 * 60 * 60 * 1000;
-            long now = System.currentTimeMillis();
-
-            userRef.child("stock_data").addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot stockItem : snapshot.getChildren()){
-                        Long timestamp = stockItem.child("timestamp").getValue(Long.class);
-                        if (timestamp !=null && (now - timestamp) > threeDaysMillis){
-                            stockItem.getRef().child("storeName").removeValue();
-                        }
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-
-                }
-            });
-        }catch (Exception e){
-            Toast.makeText(getContext(), "Error cleaning expired store names: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+    @Override
+    public void onActivityResult(int requestCode, int resultCode,@Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 101 && resultCode == RESULT_OK && data != null) {
+            selectedImageUri = data.getData();
+            imageViewProfile.setImageURI(selectedImageUri);
         }
+    }
+
+    public void uploadImageToCloudinary(Uri imageUri){
+
+        if (imageUri== null){
+            Toast.makeText(getContext(), "No image selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(getContext(), "Uploading image...", Toast.LENGTH_SHORT).show();
+        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", "dsthe3jtx",
+                "api_key", "982556741147415",
+                "api_secret" , "LB-4F76_1NU8345AUyok-SaDxds"
+        ));
+
+        new Thread(()-> {
+            try {
+
+                InputStream inputStream = requireContext().getContentResolver().openInputStream(imageUri);
+                Map uploadResult = cloudinary.uploader().upload(inputStream, ObjectUtils.emptyMap());
+                String imageUrl = (String) uploadResult.get("secure_url");
+
+                if (isAdded()) {
+                    requireActivity().runOnUiThread(() -> {
+                        saveImageUrlToFirebase(imageUrl);
+                        Toast.makeText(getContext(), "Profile image uploaded successfully", Toast.LENGTH_SHORT).show();
+
+                        //update Imagevies
+                        Glide.with(requireContext()).load(imageUri).into(imageViewProfile);
+                    });
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+                if (isAdded()){
+                    requireActivity().runOnUiThread(()->{
+                        Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                });
+                    }
+            }
+        }).start();
+    }
+
+    private void saveImageUrlToFirebase(String url){
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("users").child(userId).child("profileImageUrl").setValue(url)
+                .addOnSuccessListener(aVoid -> {
+
+                })
+                .addOnFailureListener(e ->
+                    Toast.makeText(getContext(), "Failed to save image URL: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
     }
 
     /**

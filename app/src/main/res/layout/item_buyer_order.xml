@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/card_bg"
+    android:padding="12dp"
+    android:layout_margin="8dp">
+
+    <TextView
+        android:id="@+id/tvSellerName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Seller: "
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/tvQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Quantity: "
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/tvPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Price: "
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"/>
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="status: "
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="@android:color/holo_red_dark"/>
+
+    <TextView
+        android:id="@+id/tvType"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Type: "
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:textColor="@android:color/holo_red_dark"/>
+
+</LinearLayout>

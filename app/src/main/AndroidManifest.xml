@@ -1,23 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-
     <!-- Permissions -->
     <!-- Camera (required for scanning QR codes / capturing photos) -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
 
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <!-- Location permissions (used for maps & GPS tracking) -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <!-- Network permissions -->
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <!-- Camera permission -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- Location permissions (used for maps & GPS tracking) -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- Network permissions -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- Camera permission -->
     <uses-permission android:name="android.permission.CAMERA" />
 
     <application
@@ -30,16 +23,41 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.COCONet"
         tools:targetApi="31">
-
-        <!-- Activities -->
+        <activity
+            android:name=".WalletActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SellerOrdersActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".BuyerOrdersActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".SellActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".FavoritesActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".UserManagementActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" /> <!-- Activities -->
         <activity
             android:name=".ContactActivity"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".RegisterSuccess"
             android:exported="false"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
         <activity
             android:name=".AdminDashActivity"
             android:exported="false"
@@ -59,9 +77,7 @@
         <activity
             android:name=".LoginActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
-
-        <!-- Launcher Activity -->
+            android:screenOrientation="portrait" /> <!-- Launcher Activity -->
         <activity
             android:name=".FirstPage"
             android:exported="true"
@@ -77,9 +93,7 @@
             android:exported="false"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize" />
-
-        <!-- Google Maps API key -->
+            android:windowSoftInputMode="adjustResize" /> <!-- Google Maps API key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/my_api_key" />
