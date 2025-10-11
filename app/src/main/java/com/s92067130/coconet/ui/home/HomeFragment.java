@@ -3,7 +3,6 @@ package com.s92067130.coconet.ui.home;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,8 +28,6 @@ import com.s92067130.coconet.R;
 import com.s92067130.coconet.databinding.FragmentHomeBinding;
 
 import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Set;
 
 // Home fragment displays the welcome message and dashboard summery data.
 public class HomeFragment extends Fragment {
@@ -177,28 +174,6 @@ public class HomeFragment extends Fragment {
 
                     }
                 });
-
-//                loadDashboard();
-
-                // Fetch user district (needed for filtering nearby stock)
-//                mDatabase.child("district").addListenerForSingleValueEvent(new ValueEventListener() {
-//                    @Override
-//                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                        currentUserDistrict = snapshot.getValue(String.class);
-//                        if (currentUserDistrict != null){
-//                            // Load dashboard only after district is known
-//                            loadDashboard(currentUserId,currentUserDistrict);
-//                        }else {
-//                            Toast.makeText(getContext(), "District not set for user", Toast.LENGTH_SHORT).show();
-//                        }
-//                    }
-//
-//                    @Override
-//                    public void onCancelled(@NonNull DatabaseError error) {
-//                        Toast.makeText(getContext(), "Failed to load district", Toast.LENGTH_SHORT).show();
-//                    }
-//                });
-
             }
 
             swipeRefreshLayout.setOnRefreshListener(() -> {
@@ -230,18 +205,6 @@ public class HomeFragment extends Fragment {
             });
 
             return root;
-
-            //pull to refresh to reload all data
-//            swipeRefreshLayout.setOnRefreshListener(() ->{
-//                if (currentUserId != null && currentUserDistrict != null){
-//                    loadDashboard(currentUserId, currentUserDistrict);
-//                }else {
-//                    swipeRefreshLayout.setRefreshing(false);
-//                    Toast.makeText(getContext(), "Data not ready. Please try again later.", Toast.LENGTH_SHORT).show();
-//                }
-//            });
-
-            //Detect scroll to bottom and refresh
 
         }catch (Exception e){
             Toast.makeText(getContext(), "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -332,7 +295,6 @@ public class HomeFragment extends Fragment {
                             for (DataSnapshot stockSnap : userSnap.child("stock_data").getChildren()) {
                                 Long ts = stockSnap.child("timestamp").getValue(Long.class);
                                 Integer qty = stockSnap.child("quantity").getValue(Integer.class);
-                                //String storeName = stockSnap.child("storeName").getValue(String.class);
 
                                 if (ts != null && qty != null) {
 

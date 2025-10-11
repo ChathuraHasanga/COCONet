@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -152,8 +151,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     private String getAdminId() {
-        // Implement logic to get current admin's UID
-        ;
+        // Implement logic to get current admin's UID;
         return FirebaseAuth.getInstance(FirebaseApp.getInstance())
                 .getCurrentUser().getUid(); // Placeholder
     }

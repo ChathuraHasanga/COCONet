@@ -11,14 +11,12 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,17 +36,11 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import org.json.JSONObject;
-
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.UUID;
 
 /**
  * RegisterActivity handles user registration, location fetching, and saving user data to Firebase.
@@ -135,7 +127,6 @@ public class RegisterActivity extends AppCompatActivity {
             locationTxt = findViewById(R.id.locationText);
             permissionBtn = findViewById(R.id.permissionbtn);
             editTextStoreName = findViewById(R.id.editTextStore);
-
 
             //Request location permission or fetch location if permission already granted
             permissionBtn.setOnClickListener(new View.OnClickListener() {
@@ -315,58 +306,6 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Sends an email containing a QR code with login token to the user's email.
-     *
-     * @param name User's full name
-     * @param email User's email address
-     * @param loginToken Unique login token
-     * @return void
-     */
-//    private void sendEmailWithQRCode(String name, String email, String loginToken) {
-//        new Thread(() -> {
-//            try{
-//                URL url = new URL("https://api.emailjs.com/api/v1.0/email/send");
-//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                conn.setRequestMethod("POST");
-//                conn.setRequestProperty("origin", "http://localhost");
-//                conn.setRequestProperty("Content-Type", "application/json");
-//                conn.setDoOutput(true);
-//
-//                String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?data=" + loginToken + "&size=150x150";
-//
-//                JSONObject jsonParam = new JSONObject();
-//                jsonParam.put("service_id", "service_vko8muz");
-//                jsonParam.put("template_id","template_2ufhjpe");;
-//                jsonParam.put("user_id", "pEb0MjlwafPm6QUFl");
-//
-//                JSONObject templateParams = new JSONObject();
-//                templateParams.put("user_name", name);
-//                templateParams.put("user_email", email);
-//                templateParams.put("qr_code_url", qrUrl);
-//
-//                jsonParam.put("template_params", templateParams);
-//
-//                OutputStream os = conn.getOutputStream();
-//                os.write(jsonParam.toString().getBytes());
-//                os.flush();
-//                os.close();
-//
-//                int responseCode = conn.getResponseCode();
-//                if (responseCode == HttpURLConnection.HTTP_OK){
-//                    runOnUiThread(() -> Toast.makeText(this, "Email with QR code sent!", Toast.LENGTH_SHORT).show());
-//                }else{
-//                    runOnUiThread(() -> Toast.makeText(this, "Failed to send email."+ responseCode, Toast.LENGTH_SHORT).show());
-//                }
-//
-//                conn.disconnect();
-//            }catch (Exception e){
-//                e.printStackTrace();
-//                runOnUiThread(() -> Toast.makeText(this, "Error sending email: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-//            }
-//        }).start();
-//    }
-
-    /**
      * Saves user details to Firebase Realtime Database and sends QR code via email.
      *
      * @param userId User's UID from Firebase Authentication
@@ -394,7 +333,6 @@ public class RegisterActivity extends AppCompatActivity {
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()){
                                 Toast.makeText(RegisterActivity.this, "User Details saved.", Toast.LENGTH_SHORT).show();
-//                                sendEmailWithQRCode(name, email, loginToken);
 
                                 // Add notification automatically to /notifications node
                                 DatabaseReference notifRef = mDatabase.child("notifications").push();

@@ -109,7 +109,6 @@ public class SellActivity extends AppCompatActivity {
                                 .addOnSuccessListener(buyerSnap -> {
                                     String buyerStoreName = buyerSnap.getValue(String.class);
 
-
                                     String orderId = dbRef.child("orders").child(buyerId).push().getKey();
                                     if (orderId == null) {
                                         Toast.makeText(this, "Failed to create order ID", Toast.LENGTH_SHORT).show();

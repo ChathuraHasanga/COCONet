@@ -133,9 +133,6 @@ public class ContactActivity extends AppCompatActivity {
                 String district = snapshot.child("district").getValue(String.class);
                 String email = snapshot.child("email").getValue(String.class);
 
-                // Store name (can also come from stock_data)
-                //String storeName = snapshot.child("storeName").getValue(String.class);
-
                 // Get latest stock_data entry (quantity + date)
                 long totalQuantity =0;
                 String latestStockDate = "N/A";

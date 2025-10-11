@@ -82,7 +82,6 @@
             app:chipIconVisible="true"
             app:chipIconTint="@android:color/white" />
 
-
         <TextView
             android:id="@+id/textView9"
             android:layout_width="match_parent"
@@ -108,6 +107,7 @@
             android:orientation="vertical"
             android:visibility="gone"
             android:padding="1dp">
+
         <GridLayout
             android:id="@+id/dashboard_grid"
             android:layout_width="match_parent"
@@ -484,7 +484,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/textView10"
             app:layout_constraintVertical_bias="0.84"/>
-
 
         <Button
             android:id="@+id/adminDashboardBtn"

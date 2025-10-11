@@ -4,7 +4,6 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
@@ -19,7 +18,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
@@ -36,7 +34,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -228,7 +225,6 @@ public class AdminDashActivity extends AppCompatActivity {
                         for (DataSnapshot stockEntry : stockDataSnap.getChildren()){
                             String dateStr = stockEntry.child("date").getValue(String.class);
                             Long quantity = stockEntry.child("quantity").getValue(Long.class);
-                        //    String storeName = stockEntry.child("storeName").getValue(String.class);
 
                             // If stock entry matches selected date, update totals
                             if (dateStr == null || quantity == null) continue;

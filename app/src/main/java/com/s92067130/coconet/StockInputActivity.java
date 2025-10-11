@@ -10,7 +10,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,11 +29,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.s92067130.coconet.ui.settings.SettingsFragment;
 
-import org.w3c.dom.Text;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
@@ -231,7 +227,6 @@ public class StockInputActivity extends AppCompatActivity {
         }catch (Exception e){
             Toast.makeText(this, "Error submitting stock: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
     }
 
     /**
