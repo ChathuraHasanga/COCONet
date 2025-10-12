@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="@color/background_color"
     android:fillViewport="true"
     android:layout_marginBottom="50dp"
     android:padding="16dp"
@@ -25,7 +25,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:text="Account Settings"
-            android:textColor="#000000"
+            android:textColor="?attr/colorOnBackground"
             android:textSize="25sp"
             android:textStyle="bold"
             android:layout_gravity="center"
@@ -54,7 +54,7 @@
                     android:layout_height="wrap_content"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp"
-                    app:cardBackgroundColor="#E1F5FE"
+                    app:cardBackgroundColor="@color/background_color"
                     android:layout_marginBottom="16dp">
 
                     <LinearLayout
@@ -125,7 +125,7 @@
                                 android:id="@+id/editTextName"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#000000"
+                                android:textColor="?attr/colorOnBackground"
                                 android:ems="10"
                                 android:hint="John Coconut"
                                 android:inputType="text"
@@ -203,7 +203,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="phone"
-                                android:textColor="#000000"
+                                android:textColor="?attr/colorOnBackground"
                                 android:ems="10"
                                 android:hint="+9477000000"
                                 android:textColorHint="#808080"
@@ -240,7 +240,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="text"
-                                android:textColor="#000000"
+                                android:textColor="?attr/colorOnBackground"
                                 android:ems="10"
                                 android:hint="Your store Name"
                                 android:textColorHint="#808080"
@@ -330,6 +330,17 @@
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent"
                             app:layout_constraintVertical_bias="0.655" />
+
+                        <Switch
+                            android:id="@+id/switchDarkMode"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Dark Mode"
+                            android:textColor="?attr/colorOnBackground"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:checked="false" />
+
 
                         <Button
                             android:id="@+id/logoutBtn"

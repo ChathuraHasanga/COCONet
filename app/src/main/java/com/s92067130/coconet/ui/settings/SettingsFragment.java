@@ -5,6 +5,7 @@ import static android.app.Activity.RESULT_OK;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.icu.util.Calendar;
 import android.location.Address;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
@@ -107,6 +110,22 @@ public class SettingsFragment extends Fragment {
             networkHelper = new NetworkHelper(context);
             networkHelper.registerNetworkCallback(offlineBanner);
         }
+        Switch darkModeSwitch = root.findViewById(R.id.switchDarkMode);
+
+        SharedPreferences prefs = getContext().getSharedPreferences("settings", Context.MODE_PRIVATE);
+        boolean isDark = prefs.getBoolean("dark_mode", false);
+        darkModeSwitch.setChecked(isDark);
+
+        darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            AppCompatDelegate.setDefaultNightMode(
+                    isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+            );
+            prefs.edit().putBoolean("dark_mode", isChecked).apply();
+
+            // Force the activity to refresh the theme immediately
+            requireActivity().recreate();
+        });
+
 
         try {
             // Initialize Firebase authentication and user reference

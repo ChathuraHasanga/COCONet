@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:background="#F2F8FF"
+    android:background="@color/background_color"
     android:padding="16dp">
 
     <LinearLayout
@@ -31,6 +31,7 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0.013"
             app:srcCompat="@drawable/ic_arrow_back_24"
+            app:tint="?attr/colorOnBackground"
             android:foreground="?attr/selectableItemBackgroundBorderless"/>
 
         <View
@@ -44,7 +45,7 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="My Orders"
-            android:textColor="#000000"
+            android:textColor="?attr/colorOnBackground"
             android:textSize="26sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"

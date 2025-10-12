@@ -8,7 +8,7 @@
     style="@style/PrimaryButton"
     android:clickable="true"
     android:focusable="true"
-    android:background="@color/white"
+    app:cardBackgroundColor="#808080"
     android:foreground="?attr/selectableItemBackground">
 
     <LinearLayout
@@ -24,7 +24,7 @@
             android:text="Store Name"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#FFFFFF"/>
+            android:textColor="?attr/colorOnBackground"/>
 
         <TextView
             android:id="@+id/tvFavOwnerName"
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:text="Owner Name"
             android:textSize="16sp"
-            android:textColor="#FFFFFF"/>
+            android:textColor="?attr/colorOnBackground"/>
 
         <TextView
             android:id="@+id/tvFavDistrict"
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:text="District"
             android:textSize="16sp"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnBackground"
             android:paddingTop="2dp"/>
 
         <TextView
@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:text="Contact"
             android:textSize="14sp"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnBackground"
             android:paddingTop="2dp"/>
 
         <TextView
@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:text="Note"
             android:textSize="16sp"
-            android:textColor="#FFFFFF"
+            android:textColor="?attr/colorOnBackground"
             android:paddingTop="2dp"/>
 
         <Button

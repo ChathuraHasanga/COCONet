@@ -39,6 +39,8 @@ import com.s92067130.coconet.databinding.FragmentMapBinding;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * MapFragment displays a Google Map with markers for users' stock data.
@@ -55,6 +57,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private FragmentMapBinding binding;
     private GoogleMap myMap;    // initialize GoogleMap instance
+    private final ExecutorService executor = Executors.newFixedThreadPool(2);
 
     /**
      * Called when the fragment creates its view.
@@ -68,20 +71,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         try {
-            MapViewModel dashboardViewModel =
-                    new ViewModelProvider(this).get(MapViewModel.class);
-
             binding = FragmentMapBinding.inflate(inflater, container, false);
             View root = binding.getRoot();
+
+            MapViewModel dashboardViewModel =
+                    new ViewModelProvider(this).get(MapViewModel.class);
 
             //set dashboard text
             final TextView textView = binding.textDashboard;
             dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
+            offlineBanner = root.findViewById(R.id.offlineBanner);
             Context context = getContext();
 
             // Network helper
-            offlineBanner = root.findViewById(R.id.offlineBanner);
             if (context != null) {
                 networkHelper = new NetworkHelper(context);
                 networkHelper.registerNetworkCallback(offlineBanner);
@@ -89,27 +92,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
             //set up the map fragment and register callback
             SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-            mapFragment.getMapAsync(this);
+            if (mapFragment != null){
+                mapFragment.getMapAsync(this);
+            }
 
             //Access the EditText and ImageView for searching locations
             EditText locationInput = root.findViewById(R.id.editLocationInput);
             ImageView searchButton = root.findViewById(R.id.searchBtn);
 
             // set click listener to search for user-entered location
-            searchButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+            searchButton.setOnClickListener(v -> {
+
                     try {
                         String locationName = locationInput.getText().toString().trim();
                         if (!locationName.isEmpty()) {
-                            findLocationByName(locationName);
+                            searchLocationAsync(locationName);
                         } else {
                             Toast.makeText(getContext(), "Please enter a location", Toast.LENGTH_SHORT).show();
                         }
                     } catch (Exception e) {
                         Toast.makeText(getContext(), "Search error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
-                }
             });
             return root;
         }catch (Exception e){
@@ -124,7 +127,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      *
      * @param locationName Name of the location entered by user.
      */
-    private void findLocationByName(String locationName) {
+    private void searchLocationAsync(String locationName) {
+        executor.execute(() -> {
         try {
             // Convert location name into coordinates
             Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
@@ -134,17 +138,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 Address address = addresses.get(0);
                 LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
 
-                // Add marker and zoom in to the location
-                myMap.addMarker(new MarkerOptions().position(latLng).title(locationName));
-                myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
-
+                requireActivity().runOnUiThread(() -> {
+                    if (myMap != null) {
+                        // Add marker and zoom in to the location
+                        myMap.addMarker(new MarkerOptions().position(latLng).title(locationName));
+                        myMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng,15));
+                    }
+                });
             }else {
-                Toast.makeText(getContext(), "Location not found", Toast.LENGTH_SHORT).show();
-            }
+                requireActivity().runOnUiThread(() ->
+                    Toast.makeText(getContext(), "Location not found", Toast.LENGTH_SHORT).show());
+                }
+
         }catch (Exception e){
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Error finding location: ", Toast.LENGTH_SHORT).show();
+            requireActivity().runOnUiThread(() ->
+                    Toast.makeText(getContext(), "Error finding location: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         }
+        });
     }
 
     /**
@@ -153,6 +163,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
      * Clicking on the info window will open ContactActivity for that user.
      */
     private void loadUserLocationsFromDatabase() {
+        executor.execute(() -> {
         try {
             // Reference to Firebase users node
             DatabaseReference databaseRef = FirebaseDatabase.getInstance("https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
@@ -161,6 +172,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    if (myMap == null) return;
+
                     // Iterate through all users
                     for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                         String name = userSnapshot.child("name").getValue(String.class);
@@ -198,14 +211,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                                         "\nCurrent stock: " + totalQuantity+ " Kg" +
                                         "\nOn: " + latestStock.date;
 
-                                Marker marker = myMap.addMarker(new MarkerOptions()
-                                        .position(position)
-                                        .title(name)
-                                        .snippet(infoText));
+                                requireActivity().runOnUiThread(() -> {
+                                    if (myMap != null) {
+                                        Marker marker = myMap.addMarker(new MarkerOptions()
+                                                .position(position)
+                                                .title(name)
+                                                .snippet(infoText));
 
-                                if (marker != null){
-                                    marker.setTag(userSnapshot.getKey()); // Set user ID as tag for contact activity
-                                }
+                                        if (marker != null) {
+                                            marker.setTag(userSnapshot.getKey()); // Set user ID as tag for contact activity
+                                        }
+                                    }
+                                });
                             }
                         }
                     }
@@ -213,12 +230,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
-                    Toast.makeText(getContext(), "Failed to load user stock locations", Toast.LENGTH_SHORT).show();
+                    requireActivity().runOnUiThread(() ->
+                        Toast.makeText(getContext(), "Failed to load user stock locations", Toast.LENGTH_SHORT).show());
                 }
             });
         }catch (Exception e){
-            Toast.makeText(getContext(), "Error loading markers: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            requireActivity().runOnUiThread(() ->
+                Toast.makeText(getContext(), "Error loading markers: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         }
+    });
     }
 
     /**

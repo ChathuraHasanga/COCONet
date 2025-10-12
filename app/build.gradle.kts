@@ -80,5 +80,5 @@ dependencies {
 
     implementation("com.cloudinary:cloudinary-android:2.3.1")
 
-    implementation("com.squareup.leakcanary:leakcanary-android:2.12")
+//    implementation("com.squareup.leakcanary:leakcanary-android:2.12")
 }
