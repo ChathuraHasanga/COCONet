@@ -3,6 +3,7 @@ package com.s92067130.coconet;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -21,12 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BuyerOrdersActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private RecyclerView recyclerView;
     private BuyerOrderAdapter adapter;
     private List<Order> orderList = new ArrayList<>();
     private DatabaseReference buyerOrdersRef;
     private String buyerUid;
+
+    private ValueEventListener buyerOrdersListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,11 @@ public class BuyerOrdersActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
         setContentView(R.layout.activity_buyer_orders);
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         recyclerView = findViewById(R.id.recyclerViewBuyerOrders);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -53,7 +63,7 @@ public class BuyerOrdersActivity extends AppCompatActivity {
     }
 
     private void loadBuyerOrders(){
-        buyerOrdersRef.addValueEventListener(new ValueEventListener() {
+        buyerOrdersListener =new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 orderList.clear();
@@ -70,13 +80,24 @@ public class BuyerOrdersActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(BuyerOrdersActivity.this, "Failed to load orders: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        buyerOrdersRef.addValueEventListener(buyerOrdersListener);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Remove Firebase listener to avoid leaks
+        if (buyerOrdersRef != null && buyerOrdersListener != null) {
+            buyerOrdersRef.removeEventListener(buyerOrdersListener);
+            buyerOrdersListener = null;
+        }
+        networkHelper.unregisterNetworkCallback();
     }
 
     public void OnClickBtnBackPurchases(View view) {
         try {
-            Intent intent = new Intent(BuyerOrdersActivity.this, MainActivity.class);
-            startActivity(intent);
+            finish();
         }catch (Exception e){
             Toast.makeText(this, "Navigation Error : " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }

@@ -74,6 +74,16 @@
 
     </LinearLayout>
 
+        <TextView
+            android:id="@+id/offlineBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FF3333"
+            android:text="You're offline."
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:padding="8dp"
+            android:visibility="gone" />
     <TextView
         android:id="@+id/tvFavouritesTitle"
         android:layout_width="match_parent"

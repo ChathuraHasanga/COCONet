@@ -43,6 +43,8 @@ import java.util.Locale;
  * under each user's UID.
  */
 public class StockInputActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private EditText editTextQuantity;
     private Button submitButton;
@@ -77,6 +79,12 @@ public class StockInputActivity extends AppCompatActivity {
 
             EdgeToEdge.enable(this);
             setContentView(R.layout.activity_stock_input);
+
+            offlineBanner = findViewById(R.id.offlineBanner);
+
+            networkHelper = new NetworkHelper(this);
+            networkHelper.registerNetworkCallback(offlineBanner);
+
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
                 v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -108,6 +116,11 @@ public class StockInputActivity extends AppCompatActivity {
         }catch (Exception e){
             Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     @Override

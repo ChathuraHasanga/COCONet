@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,6 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserManagementActivity  extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
+
     RecyclerView recyclerView;
     DatabaseReference userRef;
     Spinner spinnerProvince, spinnerStatus;
@@ -52,6 +56,11 @@ public class UserManagementActivity  extends AppCompatActivity {
         if(getSupportActionBar() != null){
             getSupportActionBar().hide();
         }
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         // Initialize RecyclerView and DatabaseReference here
         recyclerView = findViewById(R.id.recyclerViewUsers);
@@ -134,6 +143,11 @@ public class UserManagementActivity  extends AppCompatActivity {
 
         // Initial load
         resetAndLoad();
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     private void resetAndLoad(){

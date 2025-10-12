@@ -3,6 +3,7 @@ package com.s92067130.coconet.ui.settings;
 import static android.app.Activity.RESULT_OK;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.icu.util.Calendar;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -34,6 +36,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 import com.s92067130.coconet.LoginActivity;
+import com.s92067130.coconet.NetworkHelper;
 import com.s92067130.coconet.R;
 import com.s92067130.coconet.UserLogger;
 import com.s92067130.coconet.databinding.FragmentSettingsBinding;
@@ -57,6 +60,8 @@ import com.cloudinary.utils.ObjectUtils;
  * - Logout functionality
  */
 public class SettingsFragment extends Fragment {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private EditText nameInput, emailInput, phoneInput, locationInput, storeNameText;
     private Button updateBtn, logoutBtn, resetBtn, permissionBtn;
@@ -92,6 +97,16 @@ public class SettingsFragment extends Fragment {
 
         binding = FragmentSettingsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+
+        Context context = getContext();
+
+        // Network helper
+        offlineBanner = root.findViewById(R.id.offlineBanner);
+        if (context != null) {
+            networkHelper = new NetworkHelper(context);
+            networkHelper.registerNetworkCallback(offlineBanner);
+        }
 
         try {
             // Initialize Firebase authentication and user reference

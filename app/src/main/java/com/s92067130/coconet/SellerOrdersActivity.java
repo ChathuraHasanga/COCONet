@@ -3,6 +3,7 @@ package com.s92067130.coconet;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -22,10 +23,15 @@ import java.util.List;
 
 public class SellerOrdersActivity extends AppCompatActivity {
 
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
+
+    private ValueEventListener ordersListener;
+    private DatabaseReference ordersRef;
+
     private RecyclerView recyclerView;
     private OrderAdapter adapter;
     private List<Order> orderList = new ArrayList<>();
-    private DatabaseReference ordersRef;
     private String sellerUid;
 
     @Override
@@ -37,6 +43,11 @@ public class SellerOrdersActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
         setContentView(R.layout.activity_seller_orders);
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         recyclerView = findViewById(R.id.recyclerViewOrders);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -54,7 +65,7 @@ public class SellerOrdersActivity extends AppCompatActivity {
     }
 
     private void loadOrders() {
-        ordersRef.addValueEventListener(new ValueEventListener() {
+        ordersListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 orderList.clear();
@@ -71,8 +82,19 @@ public class SellerOrdersActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(SellerOrdersActivity.this, "Failed to load orders", Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        ordersRef.addValueEventListener(ordersListener);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (ordersListener != null) {
+            ordersRef.removeEventListener(ordersListener);
+        }
+        networkHelper.unregisterNetworkCallback();
+    }
+
     public void OnClickBtnBackOrders(View view) {
         try {
             Intent intent = new Intent(SellerOrdersActivity.this, MainActivity.class);

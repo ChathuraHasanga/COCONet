@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.auth.FirebaseAuth;
 
 public class ForgotPasswordActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private EditText resetEmail;
     private Button resetBtn;
@@ -34,6 +37,11 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
         setContentView(R.layout.activity_forgot_password);
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         resetEmail = findViewById(R.id.resetEmail);
         resetBtn = findViewById(R.id.resetBtn);
@@ -74,5 +82,10 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         });
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 }

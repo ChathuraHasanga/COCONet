@@ -33,6 +33,8 @@ import java.util.Map;
  * store name, district, contact number, email, and stock information.
  */
 public class ContactActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private TextView infoContactSnippet;
     private Button contactBtn, btnFavorite, btnSell, btnRequestBuy;
@@ -54,6 +56,11 @@ public class ContactActivity extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_contact);
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         // Initialize views from XML
         infoContactSnippet = findViewById(R.id.infoContactSnippet);
@@ -89,6 +96,11 @@ public class ContactActivity extends AppCompatActivity {
             return insets;
         });
 
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     /**

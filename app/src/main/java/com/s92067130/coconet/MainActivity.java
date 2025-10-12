@@ -36,6 +36,8 @@ import com.s92067130.coconet.ui.home.HomeFragment;
  * It also handles navigation to StockInputActivity.
  */
 public class MainActivity extends AppCompatActivity {
+    private ChildEventListener notifListener;
+    private DatabaseReference notifRef;
 
     // Declare the binding variable for the layout
     private ActivityMainBinding binding;
@@ -93,15 +95,14 @@ public class MainActivity extends AppCompatActivity {
             if (homeFragment != null) homeFragment.onResume(); //reload dashboard
         });
 
-        DatabaseReference notifRef = FirebaseDatabase.getInstance().getReference("notifications");
+        notifRef = FirebaseDatabase.getInstance().getReference("notifications");
 
-        notifRef.addChildEventListener(new ChildEventListener() {
+        notifListener =new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 NotificationModel notif = snapshot.getValue(NotificationModel.class);
                 if (notif != null && !notif.read){
                     showLocalNotification(notif.title, notif.body);
-
                     snapshot.getRef().child("read").setValue(true);
                 }
             }
@@ -125,9 +126,16 @@ public class MainActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError error) {
 
             }
-        });
+        };
+        notifRef.addChildEventListener(notifListener);
+    }
 
-
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (notifListener != null) {
+            notifRef.removeEventListener(notifListener);
+        }
     }
 
     private void showLocalNotification(String title, String body){

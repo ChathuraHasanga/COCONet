@@ -1,5 +1,6 @@
 package com.s92067130.coconet.ui.map;
 
+import android.content.Context;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.Marker;
 import com.s92067130.coconet.ContactActivity;
+import com.s92067130.coconet.NetworkHelper;
 import com.s92067130.coconet.StockInputActivity.Stock;
 
 import androidx.annotation.NonNull;
@@ -48,6 +50,8 @@ import java.util.Locale;
  * - Opens a ContactActivity when a marker’s info window is clicked.
  */
 public class MapFragment extends Fragment implements OnMapReadyCallback {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private FragmentMapBinding binding;
     private GoogleMap myMap;    // initialize GoogleMap instance
@@ -73,6 +77,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             //set dashboard text
             final TextView textView = binding.textDashboard;
             dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
+            Context context = getContext();
+
+            // Network helper
+            offlineBanner = root.findViewById(R.id.offlineBanner);
+            if (context != null) {
+                networkHelper = new NetworkHelper(context);
+                networkHelper.registerNetworkCallback(offlineBanner);
+            }
 
             //set up the map fragment and register callback
             SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);

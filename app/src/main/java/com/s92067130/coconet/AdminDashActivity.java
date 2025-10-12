@@ -50,6 +50,9 @@ import java.util.TreeMap;
  */
 public class AdminDashActivity extends AppCompatActivity {
 
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
+
     // Firebase references
     DatabaseReference mDatabase;
     FirebaseAuth mAuth;
@@ -87,11 +90,16 @@ public class AdminDashActivity extends AppCompatActivity {
                 getSupportActionBar().hide();
             }
 
-            //enable edge-to-edge layout.
-            EdgeToEdge.enable(this);
-
             //set layout from resource file.
             setContentView(R.layout.activity_admin_dash);
+
+            offlineBanner = findViewById(R.id.offlineBanner);
+
+            networkHelper = new NetworkHelper(this);
+            networkHelper.registerNetworkCallback(offlineBanner);
+
+            //enable edge-to-edge layout.
+            EdgeToEdge.enable(this);
 
             // Initialize all view components
             stockDate = findViewById(R.id.stockDate);
@@ -114,6 +122,11 @@ public class AdminDashActivity extends AppCompatActivity {
         }catch (Exception e){
             Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     /**

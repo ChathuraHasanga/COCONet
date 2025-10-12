@@ -1,5 +1,6 @@
 package com.s92067130.coconet.ui.home;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +25,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.s92067130.coconet.AdminDashActivity;
+import com.s92067130.coconet.NetworkHelper;
 import com.s92067130.coconet.R;
 import com.s92067130.coconet.databinding.FragmentHomeBinding;
 
@@ -31,6 +33,8 @@ import java.util.Calendar;
 
 // Home fragment displays the welcome message and dashboard summery data.
 public class HomeFragment extends Fragment {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     // View Binding & UI Elements
     private FragmentHomeBinding binding;
@@ -81,6 +85,15 @@ public class HomeFragment extends Fragment {
 
             final TextView textView = binding.textHome;
             homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+
+            Context context = getContext();
+
+            // Network helper
+            offlineBanner = root.findViewById(R.id.offlineBanner);
+            if (context != null) {
+                networkHelper = new NetworkHelper(context);
+                networkHelper.registerNetworkCallback(offlineBanner);
+            }
 
             //initialize views
             welcomeText = root.findViewById(R.id.welcomeTxt);

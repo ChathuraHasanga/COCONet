@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FavoritesActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     private RecyclerView recyclerFavourites;
     private FavouriteAdapter adapter;
@@ -43,6 +45,10 @@ public class FavoritesActivity extends AppCompatActivity {
         if (getSupportActionBar() != null){
             getSupportActionBar().hide();
         }
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         recyclerFavourites = findViewById(R.id.recyclerFavourites);
         recyclerFavourites.setLayoutManager(new LinearLayoutManager(this));
@@ -61,6 +67,11 @@ public class FavoritesActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     private void loadFavourites() {

@@ -34,6 +34,9 @@ import com.google.firebase.database.FirebaseDatabase;
  * and navigates to MainActivity on successful login.
  */
 public class LoginActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
+
 
     //Declare variables for UI components.
     EditText editTextEmail, editTextPassword;
@@ -89,6 +92,11 @@ public class LoginActivity extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         try {
             //Initialize firebase authentication and UI components.
@@ -216,6 +224,11 @@ public class LoginActivity extends AppCompatActivity {
         }catch (Exception e){
             Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     /**

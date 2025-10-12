@@ -63,6 +63,19 @@
             android:layout_weight="1" />
 
     </LinearLayout>
+        <TextView
+            android:id="@+id/offlineBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FF3333"
+            android:text="You're offline."
+            android:textColor="#FFFFFF"
+            android:gravity="center"
+            android:padding="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="gone" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"

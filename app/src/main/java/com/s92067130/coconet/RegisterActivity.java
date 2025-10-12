@@ -47,6 +47,9 @@ import java.util.Locale;
  * It also sends a QR-code login email to the user after registration.
  */
 public class RegisterActivity extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
+
 
     // Declare variables for views and Firebase
     EditText editTextEmail, editTextPassword, editTextName, editContactNumber, editTextConfirmPassword, editTextStoreName;
@@ -109,6 +112,11 @@ public class RegisterActivity extends AppCompatActivity {
 
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
+
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
 
         try {
             //initialize firebase
@@ -303,6 +311,11 @@ public class RegisterActivity extends AppCompatActivity {
         }catch (Exception e){
             Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 
     /**

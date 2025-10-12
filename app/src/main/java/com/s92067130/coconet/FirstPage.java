@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Window;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,8 @@ import androidx.core.view.WindowInsetsCompat;
  * It displays a splash page for a short duration before navigating to the LoginActivity.
  */
 public class FirstPage extends AppCompatActivity {
+    private NetworkHelper networkHelper;
+    private TextView offlineBanner;
 
     /**
      * Called when the activity is first created.
@@ -46,6 +49,11 @@ public class FirstPage extends AppCompatActivity {
         //set the layout for first page.
         setContentView(R.layout.activity_first_page);
 
+        offlineBanner = findViewById(R.id.offlineBanner);
+
+        networkHelper = new NetworkHelper(this);
+        networkHelper.registerNetworkCallback(offlineBanner);
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -54,7 +62,7 @@ public class FirstPage extends AppCompatActivity {
 
         /*
          * Schedule a delayed task using Handler to navigate to LoginActivity
-         * after a short splash screen duration (2 seconds)
+         * after a short splash screen duration (1 second)
          */
         new Handler(Looper.getMainLooper()).postDelayed(()-> {
             // Create an intent to start LoginActivity
@@ -62,6 +70,11 @@ public class FirstPage extends AppCompatActivity {
             startActivity(intent);
 
             finish();  //user can't go back to this page
-        }, 2000); //2 seconds delay
+        }, 1000); //1 seconds delay
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        networkHelper.unregisterNetworkCallback();
     }
 }
