@@ -32,12 +32,14 @@ public class BuyerOrderAdapter extends RecyclerView.Adapter<BuyerOrderAdapter.Bu
     public void onBindViewHolder(@NonNull BuyerOrderViewHolder holder, int position) {
         // Bind data to your ViewHolder
         Order order = orderList.get(position);
-        holder.tvSellerName.setText("Seller: " + order.sellerName);
-        holder.tvQuantity.setText("Quantity: " + order.quantity + " Kg");
-        holder.tvPrice.setText("Price Per Kg: Rs. " + order.price);
-        holder.tvStatus.setText("Status: " + order.status);
-        holder.tvType.setText("Type: " + order.type);
-
+        if (order != null) {
+            holder.tvSellerName.setText("Seller: " + (order.sellerName != null ? order.sellerName : "N/A"));
+            holder.tvQuantity.setText("Quantity: " + order.quantity + " Kg");
+            holder.tvPrice.setText("Price Per Kg: Rs. " + order.price);
+            holder.tvStatus.setText("Status: " + (order.status != null ? order.status : "Unknown"));
+            holder.tvType.setText("Type: " + (order.type != null ? order.type : "N/A"));
+        }
+        
         //status color
         switch (order.status){
             case "accepted":

@@ -42,17 +42,20 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     }
 
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        User user = users.get(position);
-        holder.name.setText("Name : " + (user.getName() != null ? user.getName() : ""));
-        holder.email.setText("Email : " + (user.getEmail() != null ? user.getEmail() : ""));
-        holder.role.setText("Role : "+user.getRole());
-        holder.status.setText("Status : "+ user.getStatus());
+        try {
+            User user = users.get(position);
+            if (user == null) return;
+            holder.name.setText("Name : " + (user.getName() != null ? user.getName() : ""));
+            holder.email.setText("Email : " + (user.getEmail() != null ? user.getEmail() : ""));
+            holder.role.setText("Role : " + user.getRole());
+            holder.status.setText("Status : " + user.getStatus());
 
-        boolean isSuspended = "suspended".equalsIgnoreCase(user.getStatus());
-        holder.btnSuspend.setText(isSuspended ? "Activate" : "Suspend");
+            boolean isSuspended = "suspended".equalsIgnoreCase(user.getStatus());
+            holder.btnSuspend.setText(isSuspended ? "Activate" : "Suspend");
 
-        //suspend/Activate with confirmation + logging
-        holder.btnSuspend.setOnClickListener(v -> {
+            //suspend/Activate with confirmation + logging
+            holder.btnSuspend.setOnClickListener(v -> {
+                try {
                     int pos = holder.getAdapterPosition();
                     if (pos == RecyclerView.NO_POSITION) return;
 
@@ -65,70 +68,88 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
                             .setTitle("Confirm Action")
                             .setMessage("Are you sure you want to change status to " + newStatus + "?")
                             .setPositiveButton("Yes", (dialog, which) -> {
-                                userRef.child(u.getUid()).child("status").setValue(newStatus)
-                                        .addOnSuccessListener(aVoid -> {
-                                            u.setStatus(newStatus);
-                                            notifyItemChanged(pos);
+                                try {
+                                    userRef.child(u.getUid()).child("status").setValue(newStatus)
+                                            .addOnSuccessListener(aVoid -> {
+                                                u.setStatus(newStatus);
+                                                notifyItemChanged(pos);
 
-                                            //save log
-                                            String logId = logRef.push().getKey();
-                                            if (logId != null) {
-                                                AuditLog log = new AuditLog(
-                                                        getAdminId(),
-                                                        u.getUid(),
-                                                        "Changed status to " + newStatus,
-                                                        System.currentTimeMillis()
-                                                );
-                                                logRef.child(logId).setValue(log);
-                                            }
-                                        });
+                                                //save log
+                                                String logId = logRef.push().getKey();
+                                                if (logId != null) {
+                                                    AuditLog log = new AuditLog(
+                                                            getAdminId(),
+                                                            u.getUid(),
+                                                            "Changed status to " + newStatus,
+                                                            System.currentTimeMillis()
+                                                    );
+                                                    logRef.child(logId).setValue(log);
+                                                }
+                                            });
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             })
                             .setNegativeButton("Cancel", null)
                             .show();
-        });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
 
-        //change role with confirmation + logging
-        holder.btnRole.setText("Role");
-        holder.btnRole.setOnClickListener(v -> {
-            int pos = holder.getAdapterPosition();
-            if (pos == RecyclerView.NO_POSITION) return;
+            //change role with confirmation + logging
+            holder.btnRole.setText("Role");
+            holder.btnRole.setOnClickListener(v -> {
+                try {
+                    int pos = holder.getAdapterPosition();
+                    if (pos == RecyclerView.NO_POSITION) return;
 
-            User u = users.get(pos);
-            if (u.getUid() == null) return;
+                    User u = users.get(pos);
+                    if (u.getUid() == null) return;
 
-            String[] roles = {"user", "manager", "moderator", "admin"};
+                    String[] roles = {"user", "manager", "moderator", "admin"};
 
-            new AlertDialog.Builder(context)
-                    .setTitle("Select Role")
-                    .setItems(roles, (dialog, which) -> {
-                        String selectedRole = roles[which];
-                        new AlertDialog.Builder(context)
-                    .setTitle("Confirm Role change")
-                    .setMessage("Are you sure you want to change role to " + selectedRole + "?")
-                    .setPositiveButton("Yes", (d, w) -> {
-                        userRef.child(u.getUid()).child("role").setValue(selectedRole)
-                                .addOnSuccessListener(aVoid -> {
-                                    u.setRole(selectedRole);
-                                    notifyItemChanged(pos);
+                    new AlertDialog.Builder(context)
+                            .setTitle("Select Role")
+                            .setItems(roles, (dialog, which) -> {
+                                String selectedRole = roles[which];
+                                new AlertDialog.Builder(context)
+                                        .setTitle("Confirm Role change")
+                                        .setMessage("Are you sure you want to change role to " + selectedRole + "?")
+                                        .setPositiveButton("Yes", (d, w) -> {
+                                            try {
+                                                userRef.child(u.getUid()).child("role").setValue(selectedRole)
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            u.setRole(selectedRole);
+                                                            notifyItemChanged(pos);
 
-                                    //save log
-                                    String logId = logRef.push().getKey();
-                                    if (logId != null) {
-                                        AuditLog log = new AuditLog(
-                                                getAdminId(),
-                                                u.getUid(),
-                                                "Changed role to " + selectedRole,
-                                                System.currentTimeMillis()
-                                        );
-                                        logRef.child(logId).setValue(log);
-                                    }
-                                });
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        })
-                .show();
-        });
+                                                            //save log
+                                                            String logId = logRef.push().getKey();
+                                                            if (logId != null) {
+                                                                AuditLog log = new AuditLog(
+                                                                        getAdminId(),
+                                                                        u.getUid(),
+                                                                        "Changed role to " + selectedRole,
+                                                                        System.currentTimeMillis()
+                                                                );
+                                                                logRef.child(logId).setValue(log);
+                                                            }
+                                                        });
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        })
+                                        .setNegativeButton("Cancel", null)
+                                        .show();
+                            })
+                            .show();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public int getItemCount() {

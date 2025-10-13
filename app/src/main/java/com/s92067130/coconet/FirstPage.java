@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Window;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,48 +34,62 @@ public class FirstPage extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
-        //request to remove the title bar for fullscreen appearance
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        try {
+            //request to remove the title bar for fullscreen appearance
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        super.onCreate(savedInstanceState);
+            super.onCreate(savedInstanceState);
 
-        //hide the action bar for a cleaner look
-        if (getSupportActionBar() != null){
-            getSupportActionBar().hide();
+            //hide the action bar for a cleaner look
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
+
+            //Enable edge-to-edge content rendering
+            EdgeToEdge.enable(this);
+
+            //set the layout for first page.
+            setContentView(R.layout.activity_first_page);
+
+            offlineBanner = findViewById(R.id.offlineBanner);
+
+            networkHelper = new NetworkHelper(this);
+            try {
+                networkHelper.registerNetworkCallback(offlineBanner);
+            } catch (Exception e) {
+                Toast.makeText(this, "Network monitor error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+
+            /*
+             * Schedule a delayed task using Handler to navigate to LoginActivity
+             * after a short splash screen duration (1 second)
+             */
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    // Create an intent to start LoginActivity
+                    Intent intent = new Intent(FirstPage.this, LoginActivity.class);
+                    startActivity(intent);
+
+                    finish();  //user can't go back to this page
+                } catch (Exception e) {
+                    Toast.makeText(FirstPage.this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            }, 1000); //1 seconds delay
+        } catch (Exception e) {
+            Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-
-        //Enable edge-to-edge content rendering
-        EdgeToEdge.enable(this);
-
-        //set the layout for first page.
-        setContentView(R.layout.activity_first_page);
-
-        offlineBanner = findViewById(R.id.offlineBanner);
-
-        networkHelper = new NetworkHelper(this);
-        networkHelper.registerNetworkCallback(offlineBanner);
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
-        /*
-         * Schedule a delayed task using Handler to navigate to LoginActivity
-         * after a short splash screen duration (1 second)
-         */
-        new Handler(Looper.getMainLooper()).postDelayed(()-> {
-            // Create an intent to start LoginActivity
-            Intent intent = new Intent(FirstPage.this, LoginActivity.class);
-            startActivity(intent);
-
-            finish();  //user can't go back to this page
-        }, 1000); //1 seconds delay
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        networkHelper.unregisterNetworkCallback();
+        try {
+            networkHelper.unregisterNetworkCallback();
+        } catch (Exception ignored) {}
     }
 }

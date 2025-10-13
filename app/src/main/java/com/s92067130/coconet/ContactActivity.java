@@ -49,58 +49,68 @@ public class ContactActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            // Remove title and hide action bar for fullscreen layout
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
+            if (getSupportActionBar() != null) getSupportActionBar().hide();
 
-        // Remove title and hide action bar for fullscreen layout
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        if (getSupportActionBar() != null) getSupportActionBar().hide();
+            EdgeToEdge.enable(this);
+            setContentView(R.layout.activity_contact);
 
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_contact);
+            offlineBanner = findViewById(R.id.offlineBanner);
 
-        offlineBanner = findViewById(R.id.offlineBanner);
+            networkHelper = new NetworkHelper(this);
+            networkHelper.registerNetworkCallback(offlineBanner);
 
-        networkHelper = new NetworkHelper(this);
-        networkHelper.registerNetworkCallback(offlineBanner);
+            // Initialize views from XML
+            infoContactSnippet = findViewById(R.id.infoContactSnippet);
+            contactBtn = findViewById(R.id.contactBtn);
+            btnFavorite = findViewById(R.id.btnFavourite);
+            btnSell = findViewById(R.id.btnSell);
+            btnRequestBuy = findViewById(R.id.btnRequestBuy);
 
-        // Initialize views from XML
-        infoContactSnippet = findViewById(R.id.infoContactSnippet);
-        contactBtn = findViewById(R.id.contactBtn);
-        btnFavorite = findViewById(R.id.btnFavourite);
-        btnSell = findViewById(R.id.btnSell);
-        btnRequestBuy = findViewById(R.id.btnRequestBuy);
+            // Get UID from Intent
+            userId = getIntent().getStringExtra("userId");
 
-        // Get UID from Intent
-        userId = getIntent().getStringExtra("userId");
+            // If a user is selected, load details, otherwise show an error toast
+            if (userId != null) {
+                loadUserContact(userId);
+            } else {
+                Toast.makeText(this, "No user selected", Toast.LENGTH_SHORT).show();
+            }
 
-        // If a user is selected, load details, otherwise show an error toast
-        if (userId != null) {
-            loadUserContact(userId);
-        } else {
-            Toast.makeText(this, "No user selected", Toast.LENGTH_SHORT).show();
+            btnFavorite.setOnClickListener(v -> addToFavorites());
+            btnRequestBuy.setOnClickListener(v -> showOrderDialog());
+
+            btnSell.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(ContactActivity.this, SellActivity.class);
+                    intent.putExtra("userId", userId);   // pass store/seller id
+                    intent.putExtra("storeName", storeName);
+                    startActivity(intent);
+                } catch (Exception e) {
+                    Toast.makeText(ContactActivity.this, "Navigation failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+
+            // Handle edge-to-edge padding
+            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                return insets;
+            });
+        }catch (Exception e){
+            Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
-        btnFavorite.setOnClickListener(v -> addToFavorites());
-        btnRequestBuy.setOnClickListener(v -> showOrderDialog());
-
-        btnSell.setOnClickListener(v -> {
-            Intent intent = new Intent(ContactActivity.this, SellActivity.class);
-            intent.putExtra("userId", userId);   // pass store/seller id
-            intent.putExtra("storeName", storeName);
-            startActivity(intent);
-        });
-
-        // Handle edge-to-edge padding
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
-
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        networkHelper.unregisterNetworkCallback();
+        try {
+            networkHelper.unregisterNetworkCallback();
+        }catch (Exception e) {
+            Toast.makeText(this, "Cleanup error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -110,103 +120,112 @@ public class ContactActivity extends AppCompatActivity {
      * @return void (nothing is returned, UI is updated directly).
      */
     private void loadUserContact(String uid) {
-        // Reference to the user's node in Firebase
-        DatabaseReference databaseRef = FirebaseDatabase.getInstance(
-                        "https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
-                .getReference("users")
-                .child(uid);
+        try {
+            // Reference to the user's node in Firebase
+            DatabaseReference databaseRef = FirebaseDatabase.getInstance(
+                            "https://coconet-63d52-default-rtdb.asia-southeast1.firebasedatabase.app")
+                    .getReference("users")
+                    .child(uid);
 
-        // Fetch data once using addListenerForSingleValueEvent
-        databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            // Fetch data once using addListenerForSingleValueEvent
+            databaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
 
-            /**
-             * Called when the data is successfully retrieved from Firebase.
-             *
-             * @param snapshot DataSnapshot containing the user's information.
-             */
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (!snapshot.exists()) {
-                    Toast.makeText(ContactActivity.this, "User not found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                /**
+                 * Called when the data is successfully retrieved from Firebase.
+                 *
+                 * @param snapshot DataSnapshot containing the user's information.
+                 */
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    try {
+                        if (!snapshot.exists()) {
+                            Toast.makeText(ContactActivity.this, "User not found", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
 
-                // Assign values to class-level variables for favorites
-                storeName = snapshot.child("storeName").getValue(String.class);
-                ownerName = snapshot.child("name").getValue(String.class);
-                district = snapshot.child("district").getValue(String.class);
-                contactNumber = snapshot.child("contactNumber").getValue(String.class);
+                        // Assign values to class-level variables for favorites
+                        storeName = snapshot.child("storeName").getValue(String.class);
+                        ownerName = snapshot.child("name").getValue(String.class);
+                        district = snapshot.child("district").getValue(String.class);
+                        contactNumber = snapshot.child("contactNumber").getValue(String.class);
 
-                // Extract basic user details
-                String name = snapshot.child("name").getValue(String.class);
-                String location = snapshot.child("locationTxt").getValue(String.class);
-                Long quantity = snapshot.child("quantity").getValue(Long.class);
-                String contact = snapshot.child("contactNumber").getValue(String.class);
-                String district = snapshot.child("district").getValue(String.class);
-                String email = snapshot.child("email").getValue(String.class);
+                        // Extract basic user details
+                        String name = snapshot.child("name").getValue(String.class);
+                        String location = snapshot.child("locationTxt").getValue(String.class);
+                        Long quantity = snapshot.child("quantity").getValue(Long.class);
+                        String contact = snapshot.child("contactNumber").getValue(String.class);
+                        String district = snapshot.child("district").getValue(String.class);
+                        String email = snapshot.child("email").getValue(String.class);
 
-                // Get latest stock_data entry (quantity + date)
-                long totalQuantity =0;
-                String latestStockDate = "N/A";
-                long latestTimestamp = Long.MIN_VALUE;
+                        // Get latest stock_data entry (quantity + date)
+                        long totalQuantity = 0;
+                        String latestStockDate = "N/A";
+                        long latestTimestamp = Long.MIN_VALUE;
 
-                DataSnapshot stockDataNode = snapshot.child("stock_data");
-                if (stockDataNode.exists()) {
+                        DataSnapshot stockDataNode = snapshot.child("stock_data");
+                        if (stockDataNode.exists()) {
 
-                    for (DataSnapshot stockSnap : stockDataNode.getChildren()) {
+                            for (DataSnapshot stockSnap : stockDataNode.getChildren()) {
 
-                        String name1 = stockSnap.child("storeName").getValue(String.class);
-                        Long quantity1 = stockSnap.child("quantity").getValue(Long.class);
-                        String date = stockSnap.child("date").getValue(String.class);
+                                String name1 = stockSnap.child("storeName").getValue(String.class);
+                                Long quantity1 = stockSnap.child("quantity").getValue(Long.class);
+                                String date = stockSnap.child("date").getValue(String.class);
 
-                        if (name1 != null) storeName = name1;
+                                if (name1 != null) storeName = name1;
 
-                        if (quantity1 != null) totalQuantity += quantity1;
+                                if (quantity1 != null) totalQuantity += quantity1;
 
-                        // Assuming date is stored as a timestamp string
-                        if (date != null) {
-                            try {
-                                long time = Long.parseLong(date);
-                                if (time > latestTimestamp) {
-                                    latestTimestamp = time;
-                                    latestStockDate = date;
+                                // Assuming date is stored as a timestamp string
+                                if (date != null) {
+                                    try {
+                                        long time = Long.parseLong(date);
+                                        if (time > latestTimestamp) {
+                                            latestTimestamp = time;
+                                            latestStockDate = date;
+                                        }
+                                    } catch (NumberFormatException e) {
+                                        // If not timestamp, just take last string
+                                        latestStockDate = date;
+                                    }
                                 }
-                            } catch (NumberFormatException e) {
-                                // If not timestamp, just take last string
-                                latestStockDate = date;
                             }
                         }
+
+                        // Final values
+                        String totalQtyStr = totalQuantity > 0 ? totalQuantity + " Kg" : "N/A";
+
+                        // Update UI only if important details exist
+                        String info = "Owner Name : " + (name != null ? name : "N/A") +
+                                "\nStore Name : " + (storeName != null ? storeName : "N/A") +
+                                "\nDistrict : " + (district != null ? district : "N/A") +
+                                "\nStock Date : " + latestStockDate +
+                                "\nStock Amount(Kg) : " + totalQtyStr +
+                                "\nContact : " + (contact != null ? contact : "N/A") +
+                                "\nEmail : " + email;
+                        infoContactSnippet.setText(info);
+
+                    } catch (Exception e) {
+                        Toast.makeText(ContactActivity.this, "Data processing error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
 
-                // Final values
-                String totalQtyStr = totalQuantity > 0 ? totalQuantity + " Kg" : "N/A";
-
-                // Update UI only if important details exist
-                    String info = "Owner Name : " + (name != null ? name : "N/A") +
-                            "\nStore Name : " + (storeName != null ? storeName : "N/A") +
-                            "\nDistrict : " + (district != null ? district : "N/A") +
-                            "\nStock Date : " + latestStockDate +
-                            "\nStock Amount(Kg) : " + totalQtyStr +
-                            "\nContact : " + (contact != null ? contact : "N/A") +
-                            "\nEmail : " + email;
-                    infoContactSnippet.setText(info);
-
-            }
-
-            /**
-             * Called when there is an error retrieving the data from Firebase.
-             *
-             * @param error DatabaseError containing the failure reason.
-             */
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(ContactActivity.this, "Failed to load user", Toast.LENGTH_SHORT).show();
-            }
-        });
+                /**
+                 * Called when there is an error retrieving the data from Firebase.
+                 *
+                 * @param error DatabaseError containing the failure reason.
+                 */
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Toast.makeText(ContactActivity.this, "Failed to load user", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } catch (Exception e) {
+            Toast.makeText(this, "Error loading contact: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void addToFavorites(){
+
         if (userId != null){
 
             // First show a dialog to ask for a note
@@ -345,6 +364,7 @@ public class ContactActivity extends AppCompatActivity {
     }
 
     private void createOrder(int quantity, double price) {
+        try {
         String buyerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String sellerId = userId;
         String sellerName = storeName;
@@ -355,6 +375,7 @@ public class ContactActivity extends AppCompatActivity {
         ordersRef.child("users").child(buyerId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                try {
                 String buyerName = snapshot.child("storeName").getValue(String.class);
 
                 String orderId = ordersRef.child("orders").child(sellerId).push().getKey();
@@ -376,15 +397,19 @@ public class ContactActivity extends AppCompatActivity {
                         Toast.makeText(ContactActivity.this, "Failed: " + task.getException().getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+            }catch (Exception e){
+                    Toast.makeText(ContactActivity.this, "Order creation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
             }
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Toast.makeText(ContactActivity.this, "Failed to get buyer info: " + error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }catch (Exception e) {
+            Toast.makeText(this, "Order creation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
-
-
 
     /**
      * Handles the back button click on Contact screen.
@@ -393,7 +418,11 @@ public class ContactActivity extends AppCompatActivity {
      * @return void (closes the activity).
      */
     public void OnClickBtnBackContact(View view) {
-        finish();
+        try {
+            finish();
+        }catch (Exception e) {
+            Toast.makeText(this, "Back navigation failed", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -403,6 +432,10 @@ public class ContactActivity extends AppCompatActivity {
      * @return void (closes the activity).
      */
     public void OnClickBtnBackMap(View view) {
-        finish();
+        try {
+            finish();
+        } catch (Exception e) {
+            Toast.makeText(this, "Back navigation failed", Toast.LENGTH_SHORT).show();
+        }
     }
 }

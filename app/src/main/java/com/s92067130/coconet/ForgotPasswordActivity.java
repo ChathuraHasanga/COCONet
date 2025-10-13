@@ -40,52 +40,69 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
         offlineBanner = findViewById(R.id.offlineBanner);
 
-        networkHelper = new NetworkHelper(this);
-        networkHelper.registerNetworkCallback(offlineBanner);
-
         resetEmail = findViewById(R.id.resetEmail);
         resetBtn = findViewById(R.id.resetBtn);
         backToLogin = findViewById(R.id.backToLogin);
         resetProgress = findViewById(R.id.resetProgress);
         mAuth = FirebaseAuth.getInstance();
 
+        networkHelper = new NetworkHelper(this);
+        try {
+            networkHelper.registerNetworkCallback(offlineBanner);
+        }catch (Exception e){
+            Toast.makeText(this, "Network monitor error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+
         //Reset password logic
         resetBtn.setOnClickListener(view -> {
-            String email = resetEmail.getText().toString().trim();
+            try {
+                String email = resetEmail.getText().toString().trim();
 
-            if (TextUtils.isEmpty(email)){
-                Toast.makeText(ForgotPasswordActivity.this, "Enter your email!", Toast.LENGTH_SHORT).show();
-                return;
+                if (TextUtils.isEmpty(email)) {
+                    Toast.makeText(ForgotPasswordActivity.this, "Enter your email!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    Toast.makeText(ForgotPasswordActivity.this, "Enter a valid email!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                resetProgress.setVisibility(View.VISIBLE);
+
+                mAuth.sendPasswordResetEmail(email)
+                        .addOnCompleteListener(task -> {
+                            resetProgress.setVisibility(View.GONE);
+                            if (task.isSuccessful()) {
+                                Toast.makeText(ForgotPasswordActivity.this, "Reset link sent to your email", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(ForgotPasswordActivity.this, "Error: " + (task.getException() != null ? task.getException().getMessage() : "Unknown"), Toast.LENGTH_LONG).show();
+                            }
+                        });
+            }catch (Exception e){
+                resetProgress.setVisibility(View.GONE);
+                Toast.makeText(ForgotPasswordActivity.this, "Unexpected error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
             }
-
-            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-                Toast.makeText(ForgotPasswordActivity.this, "Enter a valid email!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            resetProgress.setVisibility(View.VISIBLE);
-
-            mAuth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener(task -> {
-                        resetProgress.setVisibility(View.GONE);
-                        if (task.isSuccessful()){
-                            Toast.makeText(ForgotPasswordActivity.this, "Reset link sent to your email", Toast.LENGTH_SHORT).show();
-                        }else {
-                            Toast.makeText(ForgotPasswordActivity.this, "Error: " + (task.getException() !=null ? task.getException().getMessage() : "Unknown"), Toast.LENGTH_LONG).show();
-                        }
-                    });
         });
 
         //Back to login
         backToLogin.setOnClickListener(view -> {
-            Intent intent = new Intent(ForgotPasswordActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+            try {
+                Intent intent = new Intent(ForgotPasswordActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }catch (Exception e){
+                Toast.makeText(this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        networkHelper.unregisterNetworkCallback();
+        try {
+            networkHelper.unregisterNetworkCallback();
+        }catch (Exception ignored){
+
+        }
     }
 }

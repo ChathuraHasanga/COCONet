@@ -69,8 +69,15 @@ public class SellActivity extends AppCompatActivity {
             return;
         }
 
-        int quantity = Integer.parseInt(quantityStr);
-        double price = Double.parseDouble(priceStr);
+        int quantity;
+        double price;
+        try {
+            quantity = Integer.parseInt(quantityStr);
+            price = Double.parseDouble(priceStr);
+        }catch (NumberFormatException e){
+            Toast.makeText(this, "Invalid number format or price.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (quantity <= 0 || price <= 0) {
             Toast.makeText(this, "Quantity and price must be greater than zero", Toast.LENGTH_SHORT).show();

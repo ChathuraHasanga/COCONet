@@ -62,7 +62,11 @@ public class NetworkHelper {
 
     public void unregisterNetworkCallback() {
         if (connectivityManager != null && networkCallback != null) {
-            connectivityManager.unregisterNetworkCallback(networkCallback);
+            try {
+                connectivityManager.unregisterNetworkCallback(networkCallback);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
