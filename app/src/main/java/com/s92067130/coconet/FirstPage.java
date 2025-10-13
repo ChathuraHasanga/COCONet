@@ -33,8 +33,6 @@ public class FirstPage extends AppCompatActivity {
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-        try {
             //request to remove the title bar for fullscreen appearance
             requestWindowFeature(Window.FEATURE_NO_TITLE);
 
@@ -54,11 +52,18 @@ public class FirstPage extends AppCompatActivity {
             offlineBanner = findViewById(R.id.offlineBanner);
 
             networkHelper = new NetworkHelper(this);
-            try {
-                networkHelper.registerNetworkCallback(offlineBanner);
-            } catch (Exception e) {
-                Toast.makeText(this, "Network monitor error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+
+            // Run network registration in background
+            new Thread(() -> {
+                try {
+                    networkHelper.registerNetworkCallback(offlineBanner);
+                } catch (Exception e) {
+                    // Run network registration in background
+                    new Thread(() ->
+                    Toast.makeText(this, "Network monitor error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                    );
+                }
+            }).start();
 
             ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
                 Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -71,19 +76,12 @@ public class FirstPage extends AppCompatActivity {
              * after a short splash screen duration (1 second)
              */
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                try {
                     // Create an intent to start LoginActivity
                     Intent intent = new Intent(FirstPage.this, LoginActivity.class);
                     startActivity(intent);
 
                     finish();  //user can't go back to this page
-                } catch (Exception e) {
-                    Toast.makeText(FirstPage.this, "Navigation error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            }, 1000); //1 seconds delay
-        } catch (Exception e) {
-            Toast.makeText(this, "Initialization error: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
+            }, 500); //0.5 seconds delay
     }
     @Override
     protected void onDestroy() {

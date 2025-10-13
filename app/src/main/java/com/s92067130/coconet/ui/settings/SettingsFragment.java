@@ -35,6 +35,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
@@ -110,7 +111,7 @@ public class SettingsFragment extends Fragment {
             networkHelper = new NetworkHelper(context);
             networkHelper.registerNetworkCallback(offlineBanner);
         }
-        Switch darkModeSwitch = root.findViewById(R.id.switchDarkMode);
+        SwitchMaterial darkModeSwitch = root.findViewById(R.id.switchDarkMode);
 
         SharedPreferences prefs = getContext().getSharedPreferences("settings", Context.MODE_PRIVATE);
         boolean isDark = prefs.getBoolean("dark_mode", false);
