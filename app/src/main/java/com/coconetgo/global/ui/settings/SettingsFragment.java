@@ -373,17 +373,43 @@ public class SettingsFragment extends Fragment {
         }
 
         Toast.makeText(getContext(), "Uploading image...", Toast.LENGTH_SHORT).show();
-        Cloudinary cloudinary = new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", "dsthe3jtx",
-                "api_key", "982556741147415",
-                "api_secret" , "LB-4F76_1NU8345AUyok-SaDxds"
-        ));
 
         new Thread(()-> {
             try {
+                java.net.URL url = new java.net.URL("https://coconet-backend.vercel.app/get-signature");
+                java.net.HttpURLConnection conn = (java.net.HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                java.io.BufferedReader reader = new java.io.BufferedReader(
+                        new java.io.InputStreamReader(conn.getInputStream())
+                );
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                // Parse JSON
+                org.json.JSONObject json = new org.json.JSONObject(response.toString());
+                String timestamp = json.getString("timestamp");
+                String signature = json.getString("signature");
+                String apiKey = json.getString("api_key");
+                String cloudName = json.getString("cloud_name");
 
                 InputStream inputStream = requireContext().getContentResolver().openInputStream(imageUri);
-                Map uploadResult = cloudinary.uploader().upload(inputStream, ObjectUtils.emptyMap());
+
+                com.cloudinary.Cloudinary cloudinary = new com.cloudinary.Cloudinary(
+                        com.cloudinary.utils.ObjectUtils.asMap("cloud_name", cloudName)
+                );
+
+                Map uploadParams = com.cloudinary.utils.ObjectUtils.asMap(
+                        "timestamp", timestamp,
+                        "signature", signature,
+                        "api_key", apiKey
+                );
+
+                Map uploadResult = cloudinary.uploader().upload(inputStream, uploadParams);
                 String imageUrl = (String) uploadResult.get("secure_url");
 
                 if (isAdded()) {
@@ -398,9 +424,9 @@ public class SettingsFragment extends Fragment {
             }catch (Exception e){
                 e.printStackTrace();
                 if (isAdded()){
-                    requireActivity().runOnUiThread(()->{
-                        Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+                    requireActivity().runOnUiThread(()->
+                        Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                );
                     }
             }
         }).start();
