@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.s92067130.coconet"
+    namespace = "com.coconetgo.global"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.s92067130.coconet"
+        applicationId = "com.coconetgo.global"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -19,7 +19,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true      // enables code shrinking, obfuscation, and optimization for release builds
+            isShrinkResources =true      // removes unused resources (images, XML, etc.)
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -32,6 +33,10 @@ android {
     }
     buildFeatures {
         viewBinding = true
+    }
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = true
     }
 }
 

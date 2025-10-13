@@ -8,6 +8,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:122350439547:android:6d5b901b31c9ba20a766de",
+        "android_client_info": {
+          "package_name": "com.coconetgo.global"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrR3hk8q4JDZFKAs3zbftf-rsuVsEVEXw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:122350439547:android:1d19bc98fdb9f5b2a766de",
         "android_client_info": {
           "package_name": "com.s92067130.coconet"
