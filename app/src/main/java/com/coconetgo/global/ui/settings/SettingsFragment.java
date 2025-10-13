@@ -305,7 +305,7 @@ public class SettingsFragment extends Fragment {
                     storeNameText.setText(snapshot.child("storeName").getValue(String.class));
 
                     String profileUrl = snapshot.child("profileImageUrl").getValue(String.class);
-                    if (profileUrl != null && !profileUrl.isEmpty()){
+                    if (isAdded() && profileUrl != null && !profileUrl.isEmpty()){
                         Glide.with(SettingsFragment.this)
                                 .load(profileUrl)
                                 .into(imageViewProfile);
@@ -425,7 +425,7 @@ public class SettingsFragment extends Fragment {
                 e.printStackTrace();
                 if (isAdded()){
                     requireActivity().runOnUiThread(()->
-                        Toast.makeText(getContext(), "Upload failed: " + e.getMessage(), Toast.LENGTH_LONG).show()
+                        Toast.makeText(getContext(), "Upload failed: Please check your internet connection", Toast.LENGTH_LONG).show()
                 );
                     }
             }
