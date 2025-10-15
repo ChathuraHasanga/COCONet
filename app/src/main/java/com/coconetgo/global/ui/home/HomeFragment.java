@@ -164,7 +164,9 @@ public class HomeFragment extends Fragment {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Toast.makeText(getContext(), "Failed to load role: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        if (isAdded() && getContext() != null) {
+                            Toast.makeText(getContext(), "Failed to load role: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 });
 
@@ -347,7 +349,9 @@ public class HomeFragment extends Fragment {
 
                 @Override
                 public void onCancelled(@NonNull DatabaseError error) {
+                    if (isAdded() && getContext() != null) {
                     Toast.makeText(getContext(), "Database error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                     showError("Database error: " + error.getMessage());
                     swipeRefreshLayout.setRefreshing(false);
                 }
@@ -456,7 +460,7 @@ public class HomeFragment extends Fragment {
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            showError("Error loading nearby stocks: "+error.getMessage());
+                            showError("Error loading pending stocks: "+error.getMessage());
                             swipeRefreshLayout.setRefreshing(false);
                         }
                     });
